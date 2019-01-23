@@ -67,13 +67,25 @@ function scan(dir: string): string[] {
 
 // Child process test runner
 async function run(conf: RunConf): Promise<void> {
+    // tslint:disable-next-line:no-let
+    let uncaughtException = false, unhandledRejection = false;
+    process.on('uncaughtException', (e) => {
+        console.log('Uncaught exception', e);
+        uncaughtException = true;
+    });
+    process.on('unhandledRejection', (e) => {
+        console.log('Unhandled promise rejection', e);
+        unhandledRejection = true;
+    });
+
     const testPaths = getTestPaths(conf.target);
     const allTests = testPaths.map(doTest);
     Promise.all(allTests)
         .then((results) => {
             const flat: boolean[] = Array.prototype.concat.apply([], results);
             const allGood = flat.reduce((p: boolean, c) => p && c);
-            process.exit(allGood ? 0 : 1);
+            const clean = allGood && !uncaughtException && !unhandledRejection;
+            process.exit(clean ? 0 : 1);
         });
 }
 
