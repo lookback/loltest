@@ -4,12 +4,12 @@ import fs from 'fs';
 import path from 'path';
 
 /** Declare a test function. */
-export const it = (name: string, fn: () => any | Promise<any>) => {
-    itTests.push({ name, fn });
+export const test = (name: string, fn: () => any | Promise<any>) => {
+    foundTests.push({ name, fn });
 };
 
-// put tests into here.
-const itTests: TestRun[] = [];
+// test() puts tests into here.
+const foundTests: TestRun[] = [];
 
 const argv = process.argv;
 
@@ -68,7 +68,7 @@ function scan(dir: string): string[] {
 // Child process test runner
 async function run(conf: RunConf): Promise<void> {
     const testPaths = getTestPaths(conf.target);
-    const allTests = testPaths.map(test);
+    const allTests = testPaths.map(doTest);
     Promise.all(allTests)
         .then((results) => {
             const flat: boolean[] = Array.prototype.concat.apply([], results);
@@ -93,10 +93,10 @@ interface TestRun {
     fn: () => any | Promise<any>;
 }
 
-function test(testPath: string): Promise<boolean[]> {
+function doTest(testPath: string): Promise<boolean[]> {
     const testFile = path.basename(testPath);
     require(testPath);
-    const tests = itTests.splice(0, itTests.length);
+    const tests = foundTests.splice(0, foundTests.length);
     if (tests.length) {
         const all = tests.map(async ({ name, fn }) => {
             try {
