@@ -17,9 +17,9 @@ In `test/foo.ts`:
 
 ```typescript
 import assert from 'assert';
-import { it } from 'loltest';
+import { test } from 'loltest';
 
-it('Works', () => {
+test('It works', () => {
     assert.deepEqual(2, 4);
 });
 ```
@@ -29,7 +29,7 @@ Run like this:
 ```bash
 $ npm test
 ...
-✗ foo.ts Works: 2 deepEqual 4
+✗ foo.ts It works: 2 deepEqual 4
 ```
 
 ### Select test file
