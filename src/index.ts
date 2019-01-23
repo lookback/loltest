@@ -3,10 +3,54 @@ import child_process from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-/** Declare a test function. */
-export const test = (name: string, fn: () => any | Promise<any>) => {
-    foundTests.push({ name, fn });
+
+export type TestFunction = {
+    (name: string, testfn: () => any | Promise<any>): void;
+
+    <S>(
+        name: string,
+        before: () => S | Promise<S>,
+        testfn: (s: S) => any | Promise<any>,
+        after?: (s: S) => any | Promise<any>,
+    ): void;
+
+    <S>(name: string, def: {
+        before?: () => S | Promise<S>,
+        testfn: (s: S) => any | Promise<any>,
+        after?: (s: S) => any | Promise<any>,
+    }): void;
 };
+
+/** Declare a test function. */
+export const test: TestFunction = (name: string, ...as: any) => {
+    if (typeof as[0] == 'function') {
+        if (as.length == 1) {
+            foundTests.push({
+                name,
+                testfn: as[0],
+            });
+        } else {
+            foundTests.push({
+                name,
+                before: as[0],
+                testfn: as[1],
+                after: as[2],
+            });
+        }
+    } else {
+        foundTests.push({
+            name,
+            ...as[0],
+        });
+    }
+};
+
+interface TestRun {
+    name: string;
+    before?: () => any;
+    testfn: (a?: any) => any;
+    after?: (a?: any) => any;
+}
 
 // test() puts tests into here.
 const foundTests: TestRun[] = [];
@@ -100,23 +144,25 @@ function getTestPaths(target: string): string[] {
     return process.exit(1);
 }
 
-interface TestRun {
-    name: string;
-    fn: () => any | Promise<any>;
-}
-
 function doTest(testPath: string): Promise<boolean[]> {
     const testFile = path.basename(testPath);
     require(testPath);
     const tests = foundTests.splice(0, foundTests.length);
     if (tests.length) {
-        const all = tests.map(async ({ name, fn }) => {
+        const all = tests.map(async ({ name, before, testfn, after }) => {
+            // tslint:disable-next-line:no-let
+            let phase = 'BEFORE';
             try {
-                await Promise.resolve().then(fn);
+                const args = await Promise.resolve().then(before);
+                phase = '';
+                await Promise.resolve().then(() => testfn(args));
+                phase = 'AFTER';
+                await Promise.resolve().then(() => after && after(args));
                 console.log('✔︎', testFile, name);
                 return true;
             } catch (e) {
-                const msg = errorMessage(e, testFile, name);
+                const pfxname = phase ? `${phase} ${name}` : name;
+                const msg = errorMessage(testFile, pfxname, e);
                 console.log(...msg);
                 return false;
             }
@@ -130,7 +176,7 @@ function doTest(testPath: string): Promise<boolean[]> {
 
 const ERR_PRELUDE = '\x1b[31m✗\x1b[0m';
 
-function errorMessage(e: any, testFile: string, name: string): string[] {
+function errorMessage(testFile: string, name: string, e: any): string[] {
     const msg = (() => {
         if (e instanceof Error) {
             if (e.stack) {
