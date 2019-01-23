@@ -104,10 +104,8 @@ function doTest(testPath: string): Promise<boolean[]> {
                 console.log('✔︎', testFile, name);
                 return true;
             } catch (e) {
-                const c = e.stack.split('\n');
-                const t = e instanceof AssertionError ? e.message : c[0];
-                const s = [t, c[1]].join('\n');
-                console.log('\x1b[31m✗\x1b[0m', testFile, `${name}:`, s);
+                const msg = errorMessage(e, testFile, name);
+                console.log(...msg);
                 return false;
             }
         });
@@ -117,3 +115,23 @@ function doTest(testPath: string): Promise<boolean[]> {
     }
     return Promise.resolve([]);
 }
+
+const ERR_PRELUDE = '\x1b[31m✗\x1b[0m';
+
+function errorMessage(e: any, testFile: string, name: string): string[] {
+    const msg = (() => {
+        if (e instanceof Error) {
+            if (e.stack) {
+                const c = e.stack.split('\n');
+                const t = e instanceof AssertionError ? e.message : c[0];
+                return [t, c[1]].join('\n');
+            } else {
+                return e.message;
+            }
+        } else {
+            return e;
+        }
+    })();
+    return [ERR_PRELUDE, testFile, `${name}:`, msg];
+}
+
