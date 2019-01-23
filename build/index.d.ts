@@ -1,2 +1,2 @@
 /** Declare a test function. */
-export declare const it: (name: string, fn: () => any) => void;
+export declare const test: (name: string, fn: () => any) => void;
