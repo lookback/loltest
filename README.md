@@ -40,3 +40,8 @@ the tests in that file.
 ```bash
 $ ./node_modules/.bin/loltest fo
 ```
+
+# Layout
+
+Tests must be in the directory `<my_project>/test/`. Any test file with a name starting
+`_` will be ignored.

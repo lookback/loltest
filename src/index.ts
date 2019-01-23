@@ -62,7 +62,7 @@ function findTarget(testDir: string, filter: string): string {
 // TODO: recursive dir scanning
 function scan(dir: string): string[] {
     const allFiles = fs.readdirSync(dir);
-    return allFiles.filter(n => n.endsWith('ts') || n.endsWith('js'));
+    return allFiles.filter(n => !n.startsWith('_') && (n.endsWith('ts') || n.endsWith('js')));
 }
 
 // Child process test runner
