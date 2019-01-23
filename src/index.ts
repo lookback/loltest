@@ -70,11 +70,11 @@ async function run(conf: RunConf): Promise<void> {
     // tslint:disable-next-line:no-let
     let uncaughtException = false, unhandledRejection = false;
     process.on('uncaughtException', (e) => {
-        console.log('Uncaught exception', e);
+        console.log('Uncaught exception:', e);
         uncaughtException = true;
     });
     process.on('unhandledRejection', (e) => {
-        console.log('Unhandled promise rejection', e);
+        console.log('Unhandled promise rejection:', e);
         unhandledRejection = true;
     });
 
