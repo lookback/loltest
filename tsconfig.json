@@ -1,0 +1,32 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"lib": [
+			"es2015",
+			"es2016",
+			"es2017",
+			"es2018",
+			"esnext.asynciterable",
+			"dom"
+		],
+		"target": "es2015",
+		"esModuleInterop": true,
+		"module": "commonjs",
+		"inlineSourceMap": true,
+		"declaration": true,
+		"moduleResolution": "node",
+		"outDir": "./build",
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+		"noUnusedLocals": true,
+		"strictNullChecks": true,
+		"noStrictGenericChecks": true,
+		"types": [
+			"node"
+		]
+	},
+	"include": [
+		"./src/**/*.ts"
+	]
+}
