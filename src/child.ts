@@ -37,7 +37,6 @@ export const runChild = async (conf: RunConf): Promise<void> => {
             const flat: boolean[] = Array.prototype.concat.apply([], results);
             const allGood = flat.reduce((p: boolean, c) => p && c);
             const clean = allGood && !uncaughtException && !unhandledRejection;
-            console.log(allGood, uncaughtException, unhandledRejection);
             process.exit(clean ? 0 : 1);
         });
 };

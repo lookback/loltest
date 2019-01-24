@@ -9,7 +9,6 @@ export const runMain = (self: string, testDir: string, filter: string) => {
     child.addListener('exit', childExit => {
         // die when child dies.
         const code = childExit ? childExit : 0;
-        console.log('exit', childExit);
         process.exit(code);
     });
 };
