@@ -42,7 +42,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         });
 };
 
-function getTestPaths(target: string): string[] {
+const getTestPaths = (target: string): string[] => {
     const stat = fs.statSync(target);
     if (stat.isFile()) {
         return [target];
@@ -51,9 +51,9 @@ function getTestPaths(target: string): string[] {
     }
     console.error("Neither file nor directory", target);
     return process.exit(1);
-}
+};
 
-function doTest(testPath: string): Promise<boolean[]> {
+const doTest = (testPath: string): Promise<boolean[]> => {
     const testFile = path.basename(testPath);
     require(testPath);
     const tests = foundTests.splice(0, foundTests.length);
@@ -79,7 +79,7 @@ function doTest(testPath: string): Promise<boolean[]> {
         console.log(' ', testFile, 'No tests found');
     }
     return Promise.resolve([]);
-}
+};
 
 const Fail = {
     fail: true,
@@ -101,7 +101,7 @@ const tryRun = <T>(
 
 const ERR_PRELUDE = '\x1b[31m✗\x1b[0m';
 
-function errorMessage(testFile: string, name: string, e: any): string[] {
+const errorMessage = (testFile: string, name: string, e: any): string[] => {
     const msg = (() => {
         if (e instanceof Error) {
             if (e.stack) {
@@ -116,5 +116,5 @@ function errorMessage(testFile: string, name: string, e: any): string[] {
         }
     })();
     return [ERR_PRELUDE, testFile, `${name}:`, msg];
-}
+};
 
