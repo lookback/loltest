@@ -1,5 +1,5 @@
 import path from 'path';
-import { RunConf, runChild, foundTests } from './child';
+import { foundTests, runChild, RunConf } from './child';
 import { runMain } from './main';
 
 /** Declare a test. */

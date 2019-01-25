@@ -68,14 +68,14 @@ const doTest = (testPath: string): Promise<boolean[]> => {
             // always run AFTER, regardless of testResult.
             await tryRun(testFile, name, 'AFTER', () => after && after(args));
             if (!isFail(testResult)) {
-                console.log('✔︎', testFile, name);
+                console.log('✔︎', `${testFile}:`, name);
                 return true;
             }
             return false;
         });
         return Promise.all(all);
     } else {
-        console.log(' ', testFile, 'No tests found');
+        console.log(' ', `${testFile}:`, 'No tests found');
     }
     return Promise.resolve([]);
 };
@@ -114,6 +114,6 @@ const errorMessage = (testFile: string, name: string, e: any): string[] => {
             return e;
         }
     })();
-    return [ERR_PRELUDE, testFile, `${name}:`, msg];
+    return [ERR_PRELUDE, `[${testFile}: ${name}]`, msg];
 };
 
