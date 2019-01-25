@@ -58,7 +58,11 @@ const runConf: RunConf | null = (() => {
 if (runConf) {
     // run as child
     require('ts-node').register(); // so we can require .ts-files
-    runChild(runConf);
+    runChild(runConf)
+        .catch(e => {
+            console.log("Tests failed", e);
+            process.exit(1);
+        });
 } else {
     const self = argv[1]; // 0 is nodejs itself
     const testDir = path.join(process.cwd(), 'test');
