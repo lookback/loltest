@@ -9,6 +9,9 @@ export interface RunConf {
     target: string;
 }
 
+/**
+ * A single run of a test case.
+ */
 export interface TestRun {
     name: string;
     before?: () => any;
@@ -16,9 +19,27 @@ export interface TestRun {
     after?: (a?: any) => any;
 }
 
+/**
+ * A file including test cases.
+ */
 interface TestFile {
     filePath: string;
     tests: TestRun[];
+}
+
+/**
+ * The result of a TestRun.
+ */
+interface TestResult {
+    name: string;
+    filename: string;
+    fail: boolean;
+    error?: Error;
+}
+
+interface Fail extends TestResult {
+    fail: true;
+    error: Error;
 }
 
 // test() puts tests into here.
@@ -63,14 +84,27 @@ export const runChild = async (conf: RunConf): Promise<void> => {
 
     Promise.all(allTests)
         .then((results) => {
-            const flat: boolean[] = flatten(results);
-            const allGood = flat.reduce((p: boolean, c) => p && c, false);
+            const flat = flatten(results);
+
+            flat.forEach((testResult, index) => {
+
+                // Main print for each test case:
+                console.log(reporter.test(testResult.name, {
+                    index,
+                    fileName: testResult.filename,
+                    passed: !testResult.fail,
+                    error: testResult.error,
+                }));
+            });
+
+            const testsAsBooleans: boolean[] = flat.map(t => !t.fail);
+            const allGood = testsAsBooleans.reduce((p: boolean, c) => p && c, false);
             const clean = allGood && !uncaughtException && !unhandledRejection;
 
             console.log(reporter.finishRun({
-                total: flat.length,
-                passed: flat.filter(p => p).length,
-                failed: flat.filter(p => !p).length,
+                total: testsAsBooleans.length,
+                passed: testsAsBooleans.filter(p => p).length,
+                failed: testsAsBooleans.filter(p => !p).length,
             }));
 
             process.exit(clean ? 0 : 1);
@@ -95,7 +129,7 @@ const getTestPaths = (target: string): string[] => {
     }
 };
 
-const doTest = (testFile: TestFile, reporter: Reporter): Promise<boolean[]> => {
+const doTest = (testFile: TestFile, reporter: Reporter): Promise<TestResult[]> => {
     const testFileName = path.basename(testFile.filePath);
     const tests = testFile.tests;
 
@@ -115,6 +149,7 @@ const doTest = (testFile: TestFile, reporter: Reporter): Promise<boolean[]> => {
 
             return {
                 name,
+                filename: testFileName,
                 fail: true,
                 error: args.error,
             };
@@ -125,19 +160,10 @@ const doTest = (testFile: TestFile, reporter: Reporter): Promise<boolean[]> => {
 
             return {
                 name,
+                filename: testFileName,
                 fail: false,
             };
         });
-
-        const report = reporter.test(testResult.name, {
-            index,
-            fileName: testFileName,
-            passed: !testResult.fail,
-            error: testResult.error,
-        });
-
-        // Main printout for this test
-        console.log(report);
 
         // always run AFTER, regardless of testResult.
         await tryRun(testFileName, name, () =>
@@ -149,19 +175,8 @@ const doTest = (testFile: TestFile, reporter: Reporter): Promise<boolean[]> => {
         return testResult;
     });
 
-    return Promise.all(all).then(results => results.map(r => !r.fail));
+    return Promise.all(all);
 };
-
-interface TestResult {
-    name: string;
-    fail: boolean;
-    error?: Error;
-}
-
-interface Fail extends TestResult {
-    fail: true;
-    error: Error;
-}
 
 const isFail = (t: any): t is Fail => !!t && !!t.fail;
 
@@ -173,6 +188,7 @@ const tryRun = <T>(
     .catch((err): TestResult => ({
         name,
         fail: true,
+        filename: testFile,
         error: err,
     }));
 
