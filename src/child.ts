@@ -4,6 +4,7 @@ import { AssertionError } from 'assert';
 import { scan } from './main';
 import { Reporter } from './reporters';
 import LolTestReporter from './reporters/loltest-reporter';
+import { flatten } from './lib/flatten';
 
 export interface RunConf {
     target: string;
@@ -44,9 +45,6 @@ interface Fail extends TestResult {
 
 // test() puts tests into here.
 export const foundTests: TestRun[] = [];
-
-const flatten = <T>(arr: T[][]): T[] =>
-    Array.prototype.concat.apply([], arr);
 
 // Child process test runner
 export const runChild = async (conf: RunConf): Promise<void> => {
