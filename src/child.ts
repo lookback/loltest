@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { AssertionError } from 'assert';
-import { scan } from './main';
+import { scan } from "./lib/scan";
 import { Reporter } from './reporters';
 import LolTestReporter from './reporters/loltest-reporter';
 import { flatten } from './lib/flatten';

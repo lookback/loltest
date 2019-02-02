@@ -1,6 +1,6 @@
 import child_process from 'child_process';
-import fs from 'fs';
 import path from 'path';
+import { scan } from './lib/scan';
 
 /** The main process which forks child processes for each test. */
 export const runMain = (self: string, testDir: string, filter: string) => {
@@ -28,9 +28,4 @@ export const findTarget = (testDir: string, filter: string): string => {
     return testDir;
 };
 
-// TODO: recursive dir scanning
-export const scan = (dir: string): string[] => {
-    const allFiles = fs.readdirSync(dir);
-    return allFiles.filter(n => !n.startsWith('_') && (n.endsWith('ts') || n.endsWith('js')));
-};
 
