@@ -2,9 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import { AssertionError } from 'assert';
 import { scan } from "./lib/scan";
-import { Reporter } from './reporters';
-import LolTestReporter from './reporters/loltest-reporter';
+import { TestCaseReport, ReporterStats, ReporterStart } from './reporters';
 import { flatten } from './lib/flatten';
+import { serializeError } from './lib/serialize-error';
 
 export interface RunConf {
     target: string;
@@ -31,7 +31,7 @@ interface TestFile {
 /**
  * The result of a TestRun.
  */
-interface TestResult {
+export interface TestResult {
     name: string;
     filename: string;
     fail: boolean;
@@ -43,8 +43,30 @@ interface Fail extends TestResult {
     error: Error;
 }
 
+export type Message = TestResultMessage | TestFinishedMessage | TestStartedMessage;
+
+export interface TestResultMessage {
+    kind: 'test_result';
+    payload: TestCaseReport;
+}
+
+export interface TestFinishedMessage {
+    kind: 'test_finished';
+    payload: ReporterStats;
+}
+
+export interface TestStartedMessage {
+    kind: 'test_started';
+    payload: ReporterStart;
+}
+
 // test() puts tests into here.
 export const foundTests: TestRun[] = [];
+
+const sendMessage = (msg: Message) => {
+    if (process.send) process.send(msg);
+    else console.warn('Not in child process, cannot send message');
+};
 
 // Child process test runner
 export const runChild = async (conf: RunConf): Promise<void> => {
@@ -60,8 +82,6 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         unhandledRejection = true;
     });
 
-    const reporter = LolTestReporter;
-
     const testFilePaths = getTestPaths(conf.target);
 
     const testFiles: TestFile[] = testFilePaths.map<TestFile>(testPath => {
@@ -73,37 +93,47 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         };
     });
 
-    console.log(reporter.startRun({
-        numFiles: testFiles.length,
-        total: testFiles.reduce((acc, testFile) => acc + testFile.tests.length, 0),
-    }));
+    sendMessage({
+        kind: 'test_started',
+        payload: {
+            numFiles: testFiles.length,
+            total: testFiles.reduce((acc, testFile) => acc + testFile.tests.length, 0),
+        },
+    });
 
-    const allTests = testFiles.map((testFile) => doTest(testFile, reporter));
+    const allTests = testFiles.map((testFile) => doTest(testFile));
 
     Promise.all(allTests)
         .then((results) => {
             const flat = flatten(results);
 
             flat.forEach((testResult, index) => {
-
-                // Main print for each test case:
-                console.log(reporter.test(testResult.name, {
-                    index,
-                    fileName: testResult.filename,
-                    passed: !testResult.fail,
-                    error: testResult.error,
-                }));
+                sendMessage({
+                    kind: 'test_result',
+                    payload: {
+                        title: testResult.name,
+                        fileName: testResult.filename,
+                        passed: !testResult.fail,
+                        index,
+                        error: testResult.error ? serializeError(testResult.error) : undefined,
+                    },
+                });
             });
 
             const testsAsBooleans: boolean[] = flat.map(t => !t.fail);
             const allGood = testsAsBooleans.reduce((p: boolean, c) => p && c, false);
             const clean = allGood && !uncaughtException && !unhandledRejection;
 
-            console.log(reporter.finishRun({
-                total: testsAsBooleans.length,
-                passed: testsAsBooleans.filter(p => p).length,
-                failed: testsAsBooleans.filter(p => !p).length,
-            }));
+            const finishedMsg: TestFinishedMessage = {
+                kind: 'test_finished',
+                payload: {
+                    total: testsAsBooleans.length,
+                    passed: testsAsBooleans.filter(p => p).length,
+                    failed: testsAsBooleans.filter(p => !p).length,
+                },
+            };
+
+            sendMessage(finishedMsg);
 
             process.exit(clean ? 0 : 1);
         });
@@ -127,7 +157,7 @@ const getTestPaths = (target: string): string[] => {
     }
 };
 
-const doTest = (testFile: TestFile, reporter: Reporter): Promise<TestResult[]> => {
+const doTest = (testFile: TestFile): Promise<TestResult[]> => {
     const testFileName = path.basename(testFile.filePath);
     const tests = testFile.tests;
 

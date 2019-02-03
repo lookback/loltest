@@ -1,15 +1,24 @@
-interface ReporterTestOptions {
+import { SerializedError } from "../lib/serialize-error";
+
+export interface ReporterStart {
+    total: number;
+    numFiles: number;
+}
+
+export interface TestCaseReport {
+    /** The name of the test case */
+    title: string;
     /** What order does this test have? */
     index: number;
     /** Indicates whether the test passed or not */
     passed: boolean;
     /** The filename of this test */
     fileName: string;
-    /** Optional error if `passed` is true */
-    error?: Error;
+    /** Error, if `passed` is false */
+    error?: Error | SerializedError;
 }
 
-interface ReporterStats {
+export interface ReporterStats {
     /** Total number of tests */
     total: number;
     /** Total passed tests */
@@ -18,14 +27,14 @@ interface ReporterStats {
     failed: number;
 }
 
-type ReporterOutput = string | undefined;
+export type ReporterOutput = string | undefined;
 
 export interface Reporter {
     /** Call before test run starts */
-    startRun: (opts: { total: number, numFiles: number }) => ReporterOutput;
+    startRun: (opts: ReporterStart) => ReporterOutput;
 
     /** Call for each test case */
-    test: (title: string, opts: ReporterTestOptions) => ReporterOutput;
+    test: (opts: TestCaseReport) => ReporterOutput;
 
     /** Call after test run ends */
     finishRun: (stats: ReporterStats) => ReporterOutput;

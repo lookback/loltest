@@ -1,5 +1,5 @@
 import { Reporter } from ".";
-import { AssertionError } from "assert";
+import { SerializedError } from "../lib/serialize-error";
 
 enum Color {
     Green = "\x1b[32m",
@@ -14,25 +14,21 @@ const colorize = (color: Color, str: string) => `${color}${str}${Color.Reset}`;
 const red: ColorFn = colorize.bind(null, Color.Red);
 const green: ColorFn = colorize.bind(null, Color.Green);
 
-const serializeError = (err: any) => {
-    if (err instanceof Error) {
-        if (err.stack) {
-            const c = err.stack.split("\n");
-            const t = err instanceof AssertionError ? err.message : c[0];
-            return [t, c[1]].join('\n');
-        } else {
-            return err.message;
-        }
+const formatError = (err: Error | SerializedError): string => {
+    if (err.stack) {
+        const c = err.stack.split('\n');
+        const t = err.message;
+        return [t, c[1]].join('\n');
+    } else {
+        return err.message;
     }
-
-    return err;
 };
 
 const logSuccess = (title: string, fileName: string) =>
     `${green("✔︎")} ${fileName}: ${title}`;
 
 const logFail = (title: string, fileName: string, error?: Error) =>
-    `${red("✗")} ${fileName}: ${title}\n${serializeError(error)}`;
+    `${red("✗")} ${fileName}: ${title}\n${error && formatError(error)}`;
 
 const pluralize = (noun: string, count: number) =>
     count > 1 ? `${noun}s` : noun;
@@ -61,7 +57,7 @@ const LolTestReporter: Reporter = {
         `Found ${total} ${pluralize('test', total)} in ${numFiles} ${
             pluralize('file', numFiles)}...`,
 
-    test: (title, { passed, fileName, error }) => {
+    test: ({title, passed, fileName, error }) => {
         return passed
             ? logSuccess(title, fileName)
             : logFail(title, fileName, error);

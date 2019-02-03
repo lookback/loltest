@@ -64,8 +64,9 @@ if (runConf) {
             process.exit(1);
         });
 } else {
-    const self = argv[1]; // 0 is nodejs itself
+    const pathToSelf = argv[1]; // 0 is nodejs itself
     const testDir = path.join(process.cwd(), 'test');
     const filter = argv[2];
-    runMain(self, testDir, filter);
+
+    runMain(pathToSelf, testDir, filter);
 }
