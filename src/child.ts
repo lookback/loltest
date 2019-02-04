@@ -43,7 +43,11 @@ interface Fail extends TestResult {
     error: Error;
 }
 
-export type Message = TestResultMessage | TestFinishedMessage | TestStartedMessage;
+export type Message =
+    | TestResultMessage
+    | TestFinishedMessage
+    | TestStartedMessage
+    | TestErrorMessage;
 
 export interface TestResultMessage {
     kind: 'test_result';
@@ -58,6 +62,11 @@ export interface TestFinishedMessage {
 export interface TestStartedMessage {
     kind: 'test_started';
     payload: ReporterStart;
+}
+
+export interface TestErrorMessage {
+    kind: 'test_error_message';
+    error?: Error;
 }
 
 // test() puts tests into here.

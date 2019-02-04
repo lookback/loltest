@@ -39,6 +39,9 @@ const handleChildMessage = (reporter: Reporter, message: Message) => {
         case 'test_finished':
             console.log(reporter.finishRun(message.payload));
             return;
+        case 'test_error_message':
+            console.error(reporter.bail(message.error && message.error.message));
+            return;
     }
     ((x: never) => { })(message); // assert exhaustive
 };

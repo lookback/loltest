@@ -38,4 +38,6 @@ export interface Reporter {
 
     /** Call after test run ends */
     finishRun: (stats: ReporterStats) => ReporterOutput;
+
+    bail: (reason?: string) => ReporterOutput;
 }

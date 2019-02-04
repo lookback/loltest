@@ -11,6 +11,10 @@ const TAPReporter: Reporter = {
     finishRun: () => {
         return '';
     },
+
+    bail: (reason) =>
+        // This is lol: http://testanything.org/tap-version-13-specification.html#bail-out
+        `Bail out! ${reason}`,
 };
 
 export default TAPReporter;

@@ -71,6 +71,9 @@ const LolTestReporter: Reporter = {
                 failed ? red(failed + ' failed') : failed + ' failed'}`,
         ].join(' ');
     },
+
+    bail: (reason) =>
+        `${red('An error occurred!')}\n${reason}`,
 };
 
 export default LolTestReporter;
