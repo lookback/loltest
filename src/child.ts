@@ -134,7 +134,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
             });
 
             const testsAsBooleans: boolean[] = flat.map(t => !t.fail);
-            const allGood = testsAsBooleans.reduce((p: boolean, c) => p && c, false);
+            const allGood = testsAsBooleans.every(p => p);
             const clean = allGood && !uncaughtException && !unhandledRejection;
 
             const finishedMsg: TestFinishedMessage = {
