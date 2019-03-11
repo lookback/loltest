@@ -4,7 +4,7 @@ import { runMain } from './main';
 import { mkParseArgs } from './lib/parse-cli-args';
 
 const parseArgs = mkParseArgs({
-    '--tap': Boolean,
+    '--reporter': String,
 });
 
 /** Declare a test. */
@@ -88,6 +88,6 @@ if (runConf) {
     runMain(pathToSelf, {
         testDir,
         filter,
-        reporter: cliArgs['--tap'] ? 'tap' : 'loltest',
+        reporter: cliArgs['--reporter'],
     });
 }

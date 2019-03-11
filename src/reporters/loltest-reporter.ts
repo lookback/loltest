@@ -1,18 +1,6 @@
 import { Reporter } from ".";
 import { SerializedError } from "../lib/serialize-error";
-
-enum Color {
-    Green = "\x1b[32m",
-    Red = "\x1b[31m",
-    Reset = "\x1b[0m",
-}
-
-type ColorFn = (str: string) => string;
-
-const colorize = (color: Color, str: string) => `${color}${str}${Color.Reset}`;
-
-const red: ColorFn = colorize.bind(null, Color.Red);
-const green: ColorFn = colorize.bind(null, Color.Green);
+import { green, red } from "../lib/colorize";
 
 const formatError = (err: Error | SerializedError): string => {
     if (err.stack) {

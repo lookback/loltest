@@ -36,14 +36,16 @@ export const mkParseArgs = <S extends Spec>(spec: S) =>
 
         return Object.assign.apply(null, argv
             .map((arg, idx, arr) => {
-                if (arg in handlers) {
-                    const handler = handlers[arg];
+                const [argName, value] = arg.split('=');
+
+                if (argName in handlers) {
+                    const handler = handlers[argName];
                     // Flags have no value, treat as 'true'
                     const isFlag = handler === Boolean;
                     // Grab next arg in position
-                    const argValue = isFlag ? 'true' : argv[idx + 1];
+                    const argValue = isFlag ? 'true' : value;
 
-                    return { [arg]: handler(argValue) };
+                    return { [argName]: handler(argValue) };
                 }
 
                 return {};

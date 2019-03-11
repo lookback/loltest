@@ -9,7 +9,7 @@ test('Parse args from an array', () => {
         '--count': Number,
     });
 
-    const result = parse(['--count', '3', '--switch', '--foo', 'lol']);
+    const result = parse(['--count=3', '--switch', '--foo=lol']);
 
     assert.deepEqual(result, {
         '--count': 3,

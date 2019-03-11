@@ -5,26 +5,31 @@ import { Message } from './child';
 import { Reporter } from './reporters';
 import TAPReporter from './reporters/tap-reporter';
 import LolTestReporter from './reporters/loltest-reporter';
+import DotReporter from './reporters/dot-reporter';
 
-type ReporterName = 'tap' | 'loltest';
+const reporters: {[key: string]: Reporter } = {
+    tap: TAPReporter,
+    loltest: LolTestReporter,
+    dot: DotReporter,
+};
 
 interface RunConfiguration {
     testDir: string;
-    reporter: ReporterName;
+    reporter?: string;
     filter?: string;
 }
-
-const reporters: {[k in ReporterName]: Reporter} = {
-    tap: TAPReporter,
-    loltest: LolTestReporter,
-};
 
 /** The main process which forks child processes for each test. */
 export const runMain = (self: string, config: RunConfiguration) => {
     const target = findTarget(config.testDir, config.filter);
     const params = ['--child-runner', target];
 
-    const reporter = reporters[config.reporter];
+    const reporter = config.reporter ? reporters[config.reporter] : reporters.loltest;
+
+    if (!reporter) {
+        console.error('Unknown reporter:', config.reporter);
+        process.exit(1);
+    }
 
     const child = child_process.fork(self, params, {
         // See https://nodejs.org/api/child_process.html#child_process_options_stdio
