@@ -38,7 +38,22 @@ Write some starting letters of the test file name to run
 the tests in that file.
 
 ```bash
-$ ./node_modules/.bin/loltest fo
+$ npx loltest fo
+# Runs test/foo.ts
+```
+
+### Reporters
+
+We bundle these reporters:
+
+- `loltest` *(default)*
+- `tap`
+- `dot`
+
+Choose between reporters with the `--reporter` CLI flag:
+
+```bash
+$ npx loltest --reporter=tap|dot|loltest
 ```
 
 # Layout

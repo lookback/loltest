@@ -1,6 +1,11 @@
 import path from 'path';
 import { foundTests, runChild, RunConf } from './child';
 import { runMain } from './main';
+import { mkParseArgs } from './lib/parse-cli-args';
+
+const parseArgs = mkParseArgs({
+    '--reporter': String,
+});
 
 /** Declare a test. */
 export type TestFunction = {
@@ -64,8 +69,25 @@ if (runConf) {
             process.exit(1);
         });
 } else {
-    const self = argv[1]; // 0 is nodejs itself
+    const pathToSelf = argv[1]; // 0 is nodejs itself
     const testDir = path.join(process.cwd(), 'test');
-    const filter = argv[2];
-    runMain(self, testDir, filter);
+
+    // `loltest some-file --tap` vs `loltest --tap some-file`
+    const isPassingFilterFirst = !!argv[2]
+        && !argv[2].startsWith('--');
+
+    const filter = argv.slice(2).length > 1
+        ? isPassingFilterFirst ? argv[2] : argv[argv.length - 1]
+        : isPassingFilterFirst ? argv[2] : undefined;
+
+    const cliArgs = parseArgs(isPassingFilterFirst
+        ? argv.slice(3)
+        : argv.slice(2, Math.max(argv.length - 1, 3))
+    );
+
+    runMain(pathToSelf, {
+        testDir,
+        filter,
+        reporter: cliArgs['--reporter'],
+    });
 }

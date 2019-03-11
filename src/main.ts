@@ -1,20 +1,73 @@
 import child_process from 'child_process';
-import fs from 'fs';
 import path from 'path';
+import { scan } from './lib/scan';
+import { Message } from './child';
+import { Reporter } from './reporters';
+import TAPReporter from './reporters/tap-reporter';
+import LolTestReporter from './reporters/loltest-reporter';
+import DotReporter from './reporters/dot-reporter';
+
+const reporters: {[key: string]: Reporter } = {
+    tap: TAPReporter,
+    loltest: LolTestReporter,
+    dot: DotReporter,
+};
+
+interface RunConfiguration {
+    testDir: string;
+    reporter?: string;
+    filter?: string;
+}
 
 /** The main process which forks child processes for each test. */
-export const runMain = (self: string, testDir: string, filter: string) => {
-    const target = findTarget(testDir, filter);
-    const child = child_process.fork(self, ['--child-runner', target]);
-    child.addListener('exit', childExit => {
+export const runMain = (self: string, config: RunConfiguration) => {
+    const target = findTarget(config.testDir, config.filter);
+    const params = ['--child-runner', target];
+
+    const reporter = config.reporter ? reporters[config.reporter] : reporters.loltest;
+
+    if (!reporter) {
+        console.error('Unknown reporter:', config.reporter);
+        process.exit(1);
+    }
+
+    const child = child_process.fork(self, params, {
+        // See https://nodejs.org/api/child_process.html#child_process_options_stdio
+        // We pipe stdin, stdout, stderr between the parent and child process,
+        // and enable IPC (Inter Process Communication) to pass messages.
+        stdio: [ process.stdin, process.stdout, process.stderr, 'ipc' ],
+    });
+
+    child.on('message', (m: Message) => handleChildMessage(reporter, m));
+
+    child.on('exit', childExit => {
         // die when child dies.
         const code = childExit ? childExit : 0;
         process.exit(code);
     });
 };
 
+const handleChildMessage = (reporter: Reporter, message: Message) => {
+    switch (message.kind) {
+        case 'test_started':
+            console.log(reporter.startRun(message.payload));
+            return;
+        case 'test_result':
+            const output = reporter.test(message.payload);
+            output && process.stdout.write(output);
+            return;
+        case 'test_finished':
+            console.log(reporter.finishRun(message.payload));
+            return;
+        case 'test_error_message':
+            console.error(reporter.bail(message.error && message.error.message));
+            return;
+    }
+    ((x: never) => { })(message); // assert exhaustive
+};
+
 /** Find a target to start child process from. */
-export const findTarget = (testDir: string, filter: string): string => {
+export const findTarget = (testDir: string, filter?: string): string => {
     if (filter) {
         const jsFiles = scan(testDir);
         const file = jsFiles.find(f => f.startsWith(filter));
@@ -25,12 +78,8 @@ export const findTarget = (testDir: string, filter: string): string => {
             process.exit(1);
         }
     }
+
     return testDir;
 };
 
-// TODO: recursive dir scanning
-export const scan = (dir: string): string[] => {
-    const allFiles = fs.readdirSync(dir);
-    return allFiles.filter(n => !n.startsWith('_') && (n.endsWith('ts') || n.endsWith('js')));
-};
 
