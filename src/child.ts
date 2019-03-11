@@ -143,7 +143,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
                     total: testsAsBooleans.length,
                     passed: testsAsBooleans.filter(p => p).length,
                     failed: testsAsBooleans.filter(p => !p).length,
-                    duration: (secsDiff * 1E3) + (nanoDiff / 1E3),
+                    duration: (secsDiff * 1E3) + (nanoDiff / 1E6),
                 },
             };
 
