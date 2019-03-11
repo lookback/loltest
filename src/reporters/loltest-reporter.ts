@@ -54,7 +54,7 @@ const LolTestReporter: Reporter = {
     // "Ran X tests. Y passed, Z failed"
     finishRun: ({ total, passed, failed, duration }) => {
         return [
-            `\nRan ${total} ${pluralize('test', total)} in ${duration} ms`,
+            `\n\nRan ${total} ${pluralize('test', total)} in ${duration} ms`,
             `${passed ? green(passed + ' passed') : passed + ' passed'}, ${
                 failed ? red(failed + ' failed') : failed + ' failed'}`,
         ].join('\n');
