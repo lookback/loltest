@@ -60,7 +60,7 @@ const TAPReporter: Reporter = {
     startRun: ({ numFiles, total }) => `TAP version 13\n1..${total}`,
 
     test: ({ title, passed, index, error, duration }) =>
-        (passed ? logSuccess(title, index) : logFailure(title, index, error)) +
+        '\n' + (passed ? logSuccess(title, index) : logFailure(title, index, error)) +
         outputDirectives({ duration }),
 
     finishRun: () => {

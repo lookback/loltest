@@ -16,7 +16,7 @@ const logSuccess = (title: string, fileName: string) =>
     `${green("✔︎")} ${fileName}: ${title}`;
 
 const logFail = (title: string, fileName: string, error?: Error) =>
-    `${red("✗")} ${fileName}: ${title}\n${error && formatError(error)}`;
+    `${red("✗")} ${fileName}: ${title}\n${error && formatError(error)}\n`;
 
 const pluralize = (noun: string, count: number) =>
     count > 1 ? `${noun}s` : noun;
@@ -46,18 +46,18 @@ const LolTestReporter: Reporter = {
             pluralize('file', numFiles)}...`,
 
     test: ({title, passed, fileName, error }) => {
-        return passed
+        return '\n' + (passed
             ? logSuccess(title, fileName)
-            : logFail(title, fileName, error);
+            : logFail(title, fileName, error));
     },
 
     // "Ran X tests. Y passed, Z failed"
     finishRun: ({ total, passed, failed, duration }) => {
         return [
-            `\nRan ${total} ${pluralize('test', total)} in ${duration} ms –`,
+            `\nRan ${total} ${pluralize('test', total)} in ${duration} ms`,
             `${passed ? green(passed + ' passed') : passed + ' passed'}, ${
                 failed ? red(failed + ' failed') : failed + ' failed'}`,
-        ].join(' ');
+        ].join('\n');
     },
 
     bail: (reason) =>

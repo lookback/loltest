@@ -53,7 +53,8 @@ const handleChildMessage = (reporter: Reporter, message: Message) => {
             console.log(reporter.startRun(message.payload));
             return;
         case 'test_result':
-            console.log(reporter.test(message.payload));
+            const output = reporter.test(message.payload);
+            output && process.stdout.write(output);
             return;
         case 'test_finished':
             console.log(reporter.finishRun(message.payload));
