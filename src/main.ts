@@ -6,12 +6,25 @@ import { Reporter } from './reporters';
 import TAPReporter from './reporters/tap-reporter';
 import LolTestReporter from './reporters/loltest-reporter';
 
+type ReporterName = 'tap' | 'loltest';
+
+interface RunConfiguration {
+    testDir: string;
+    reporter: ReporterName;
+    filter?: string;
+}
+
+const reporters: {[k in ReporterName]: Reporter} = {
+    tap: TAPReporter,
+    loltest: LolTestReporter,
+};
+
 /** The main process which forks child processes for each test. */
-export const runMain = (self: string, testDir: string, filter: string) => {
-    const target = findTarget(testDir, filter);
+export const runMain = (self: string, config: RunConfiguration) => {
+    const target = findTarget(config.testDir, config.filter);
     const params = ['--child-runner', target];
 
-    const reporter = TAPReporter;
+    const reporter = reporters[config.reporter];
 
     const child = child_process.fork(self, params, {
         // See https://nodejs.org/api/child_process.html#child_process_options_stdio
@@ -48,7 +61,7 @@ const handleChildMessage = (reporter: Reporter, message: Message) => {
 };
 
 /** Find a target to start child process from. */
-export const findTarget = (testDir: string, filter: string): string => {
+export const findTarget = (testDir: string, filter?: string): string => {
     if (filter) {
         const jsFiles = scan(testDir);
         const file = jsFiles.find(f => f.startsWith(filter));
@@ -59,6 +72,7 @@ export const findTarget = (testDir: string, filter: string): string => {
             process.exit(1);
         }
     }
+
     return testDir;
 };
 
