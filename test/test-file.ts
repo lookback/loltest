@@ -5,10 +5,12 @@ test('It works', () => {
     assert.equal(2, 2);
 });
 
-test('This fails', () => {
-    assert.equal(2, 4);
-});
+// Uncomment these tests if you wanna see fail output:
 
-test('Deep equal', () => {
-    assert.deepEqual({ foo: 'bar' }, { bar: 'foo' });
-});
+// test('This fails', () => {
+//     assert.equal(2, 4);
+// });
+
+// test('Deep equal', () => {
+//     assert.deepEqual({ foo: 'bar' }, { bar: 'foo' });
+// });
