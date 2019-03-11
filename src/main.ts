@@ -2,15 +2,16 @@ import child_process from 'child_process';
 import path from 'path';
 import { scan } from './lib/scan';
 import { Message } from './child';
-import LolTestReporter from './reporters/loltest-reporter';
 import { Reporter } from './reporters';
+import TAPReporter from './reporters/tap-reporter';
+import LolTestReporter from './reporters/loltest-reporter';
 
 /** The main process which forks child processes for each test. */
 export const runMain = (self: string, testDir: string, filter: string) => {
     const target = findTarget(testDir, filter);
     const params = ['--child-runner', target];
 
-    const reporter = LolTestReporter;
+    const reporter = TAPReporter;
 
     const child = child_process.fork(self, params, {
         // See https://nodejs.org/api/child_process.html#child_process_options_stdio

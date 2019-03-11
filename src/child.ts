@@ -36,6 +36,7 @@ export interface TestResult {
     filename: string;
     fail: boolean;
     error?: Error;
+    duration: number;
 }
 
 interface Fail extends TestResult {
@@ -110,7 +111,9 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         },
     });
 
+    const hrtime = process.hrtime();
     const allTests = testFiles.map((testFile) => doTest(testFile));
+    const [secsDiff, nanoDiff] = process.hrtime(hrtime);
 
     Promise.all(allTests)
         .then((results) => {
@@ -125,6 +128,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
                         passed: !testResult.fail,
                         index,
                         error: testResult.error ? serializeError(testResult.error) : undefined,
+                        duration: testResult.duration,
                     },
                 });
             });
@@ -139,6 +143,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
                     total: testsAsBooleans.length,
                     passed: testsAsBooleans.filter(p => p).length,
                     failed: testsAsBooleans.filter(p => !p).length,
+                    duration: (secsDiff * 1E3) + (nanoDiff / 1E3),
                 },
             };
 
@@ -189,16 +194,20 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
                 filename: testFileName,
                 fail: true,
                 error: args.error,
+                duration: 0,
             };
         }
 
         const testResult = await tryRun<TestResult>(testFileName, name, async () => {
+            const hrtime = process.hrtime();
             await testfn(args);
+            const [secs, nano] = process.hrtime(hrtime);
 
             return {
                 name,
                 filename: testFileName,
                 fail: false,
+                duration: (secs * 1E3) + (nano / 1E6),
             };
         });
 
@@ -227,6 +236,7 @@ const tryRun = <T>(
         fail: true,
         filename: testFile,
         error: err,
+        duration: 0,
     }));
 
 const formatError = (e: any): string => {

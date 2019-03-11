@@ -16,6 +16,8 @@ export interface TestCaseReport {
     fileName: string;
     /** Error, if `passed` is false */
     error?: Error | SerializedError;
+    /** Duration to run this test, in milliseconds */
+    duration: number;
 }
 
 export interface ReporterStats {
@@ -25,6 +27,8 @@ export interface ReporterStats {
     passed: number;
     /** Total failed tests */
     failed: number;
+    /** Duration in milliseconds */
+    duration: number;
 }
 
 export type ReporterOutput = string | undefined;

@@ -53,18 +53,21 @@ const logSuccess = (title: string, index: number) =>
 const logFailure = (title:  string, index: number, error?: SerializedError) =>
     `not ok ${index + 1} - ${title}` + (error ? outputDiagnostics(formatError(error)) : '');
 
-const TAPReporter: Reporter = {
-    startRun: ({ numFiles, total }) =>
-        `TAP version 13\n1..${total}`,
+const outputDirectives = ({duration}: { duration: number  }) =>
+    `${duration !== 0 ? ' # time=' + duration + 'ms': ''}`;
 
-    test: ({ title, passed, index, error }) =>
-        passed ? logSuccess(title, index) : logFailure(title, index, error),
+const TAPReporter: Reporter = {
+    startRun: ({ numFiles, total }) => `TAP version 13\n1..${total}`,
+
+    test: ({ title, passed, index, error, duration }) =>
+        (passed ? logSuccess(title, index) : logFailure(title, index, error)) +
+        outputDirectives({ duration }),
 
     finishRun: () => {
-        return '';
+        return "";
     },
 
-    bail: (reason) =>
+    bail: reason =>
         // This is lol: http://testanything.org/tap-version-13-specification.html#bail-out
         `Bail out! ${reason}`,
 };
