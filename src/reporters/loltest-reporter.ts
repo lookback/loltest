@@ -12,11 +12,20 @@ const formatError = (err: Error | SerializedError): string => {
     }
 };
 
-const logSuccess = (title: string, fileName: string) =>
-    `${green("✔︎")} ${fileName} ${dim('›')} ${title}`;
+/** Don't print durations (in milliseconds) below this threshold. */
+const SHOW_TIME_THRESHOLD_MS = 20;
 
-const logFail = (title: string, fileName: string, error?: Error) =>
-    `${red("✗")} ${fileName} ${dim('›')} ${title}\n${error && formatError(error)}\n`;
+const formatTime = (ms: number) =>
+    ms >= 1000 ? `${ms / 1E3}s` : `${ms}ms`;
+
+const logSuccess = (title: string, fileName: string, duration: number) =>
+    `${green("✔︎")} ${fileName} ${dim('›')} ${title}${
+        duration > SHOW_TIME_THRESHOLD_MS ? dim(` (${formatTime(duration)})`) : ''}`;
+
+const logFail = (title: string, fileName: string, duration: number, error?: Error) =>
+    `${red("✗")} ${red(fileName)} ${dim('›')} ${title}${
+        duration > SHOW_TIME_THRESHOLD_MS ? dim(` (${formatTime(duration)})`) : ''}
+${error && formatError(error)}\n`;
 
 const pluralize = (noun: string, count: number) =>
     count > 1 ? `${noun}s` : noun;
@@ -28,16 +37,20 @@ const pluralize = (noun: string, count: number) =>
  *
  ```bash
 Found 4 tests in 2 files...
-✗ test-file.ts: This fails
+✗ test-file.ts › This fails
 2 == 4
     at __1.test (/Users/brookie/Projects/Code/lookback/loltest/test/test-file.ts:9:12)
 ✗ test-file.ts: Deep equal
 { foo: 'bar' } deepEqual { bar: 'foo' }
     at __1.test (/Users/brookie/Projects/Code/lookback/loltest/test/test-file.ts:13:12)
-✔︎ another-test.ts: Another
-✔︎ test-file.ts: It works
+✔︎ parse-args.ts › Parse args from an array
+✔︎ parse-args.ts › Parse empty args array
+✔︎ slow-test.ts › Before slow test
+✔︎ slow-test.ts › After slow test
+✔︎ test-file.ts › It works
 
-Ran 4 tests – 2 passed, 2 failed
+Ran 29 tests in 3.01s
+28 passed, 1 failed
 ```
  */
 const LolTestReporter: Reporter = {
@@ -45,16 +58,16 @@ const LolTestReporter: Reporter = {
         `Found ${total} ${pluralize('test', total)} in ${numFiles} ${
             pluralize('file', numFiles)}...`,
 
-    test: ({title, passed, fileName, error }) => {
+    test: ({title, passed, fileName, error, duration }) => {
         return (passed
-            ? logSuccess(title, fileName)
-            : logFail(title, fileName, error));
+            ? logSuccess(title, fileName, duration)
+            : logFail(title, fileName, duration, error));
     },
 
     // "Ran X tests. Y passed, Z failed"
     finishRun: ({ total, passed, failed, duration }) => {
         return [
-            `\n\nRan ${total} ${pluralize('test', total)} in ${duration} ms`,
+            `\n\nRan ${total} ${pluralize('test', total)} in ${formatTime(duration)}`,
             `${passed ? green(passed + ' passed') : passed + ' passed'}, ${
                 failed ? red(failed + ' failed') : failed + ' failed'}`,
         ].join('\n');

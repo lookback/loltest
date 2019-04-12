@@ -7,9 +7,9 @@ enum Color {
     White = "\x1b[97m",
 }
 
-type ColorFn = (str: string) => string;
+type ColorFn = (str: any) => string;
 
-export const colorize = (color: Color, str: string) => `${color}${str}${Color.Reset}`;
+export const colorize = (color: Color, str: any) => `${color}${String(str)}${Color.Reset}`;
 
 export const red: ColorFn = colorize.bind(null, Color.Red);
 export const green: ColorFn = colorize.bind(null, Color.Green);

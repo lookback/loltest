@@ -5,6 +5,15 @@ test('Before slow test', () => {
     assert.equal(2, 2);
 });
 
+test('Kinda slow test', async () => {
+    return new Promise(rs => {
+        setTimeout(() => {
+            assert.equal(2, 2);
+            rs();
+        }, 400);
+    });
+});
+
 test('Slow test', async () => {
     return new Promise(rs => {
         setTimeout(() => {

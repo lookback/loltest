@@ -111,11 +111,9 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         },
     });
 
-    const hrtime = process.hrtime();
+    const startTime = Date.now();
 
     const allTests = testFiles.map(async (testFile) => await doTest(testFile));
-
-    const [secsDiff, nanoDiff] = process.hrtime(hrtime);
 
     Promise.all(allTests)
         .then((results) => {
@@ -131,7 +129,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
                     total: testsAsBooleans.length,
                     passed: testsAsBooleans.filter(p => p).length,
                     failed: testsAsBooleans.filter(p => !p).length,
-                    duration: (secsDiff * 1E3) + (nanoDiff / 1E6),
+                    duration: Date.now() - startTime,
                 },
             };
 
@@ -187,15 +185,15 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
         }
 
         const testResult = await tryRun<TestResult>(testFileName, name, async () => {
-            const hrtime = process.hrtime();
+            const startedAt = Date.now();
             await testfn(args);
-            const [secs, nano] = process.hrtime(hrtime);
+            const duration = Date.now() - startedAt;
 
             return {
                 name,
                 filename: testFileName,
                 fail: false,
-                duration: (secs * 1E3) + (nano / 1E6),
+                duration,
             };
         });
 
