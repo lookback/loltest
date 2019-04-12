@@ -112,26 +112,14 @@ export const runChild = async (conf: RunConf): Promise<void> => {
     });
 
     const hrtime = process.hrtime();
-    const allTests = testFiles.map((testFile) => doTest(testFile));
+
+    const allTests = testFiles.map(async (testFile) => await doTest(testFile));
+
     const [secsDiff, nanoDiff] = process.hrtime(hrtime);
 
     Promise.all(allTests)
         .then((results) => {
             const flat = flatten(results);
-
-            flat.forEach((testResult, index) => {
-                sendMessage({
-                    kind: 'test_result',
-                    payload: {
-                        title: testResult.name,
-                        fileName: testResult.filename,
-                        passed: !testResult.fail,
-                        index,
-                        error: testResult.error ? serializeError(testResult.error) : undefined,
-                        duration: testResult.duration,
-                    },
-                });
-            });
 
             const testsAsBooleans: boolean[] = flat.map(t => !t.fail);
             const allGood = testsAsBooleans.every(p => p);
@@ -209,6 +197,18 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
                 fail: false,
                 duration: (secs * 1E3) + (nano / 1E6),
             };
+        });
+
+        sendMessage({
+            kind: 'test_result',
+            payload: {
+                title: testResult.name,
+                fileName: testResult.filename,
+                passed: !testResult.fail,
+                index,
+                error: testResult.error ? serializeError(testResult.error) : undefined,
+                duration: testResult.duration,
+            },
         });
 
         // always run AFTER, regardless of testResult.
