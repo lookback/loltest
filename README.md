@@ -48,12 +48,11 @@ We bundle these reporters:
 
 - `loltest` *(default)*
 - `tap`
-- `dot`
 
 Choose between reporters with the `--reporter` CLI flag:
 
 ```bash
-$ npx loltest --reporter=tap|dot|loltest
+$ npx loltest --reporter=<reporter>
 ```
 
 # Layout

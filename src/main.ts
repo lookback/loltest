@@ -5,12 +5,10 @@ import { Message } from './child';
 import { Reporter } from './reporters';
 import TAPReporter from './reporters/tap-reporter';
 import LolTestReporter from './reporters/loltest-reporter';
-import DotReporter from './reporters/dot-reporter';
 
 const reporters: {[key: string]: Reporter } = {
     tap: TAPReporter,
     loltest: LolTestReporter,
-    dot: DotReporter,
 };
 
 interface RunConfiguration {
@@ -54,7 +52,7 @@ const handleChildMessage = (reporter: Reporter, message: Message) => {
             return;
         case 'test_result':
             const output = reporter.test(message.payload);
-            output && process.stdout.write(output);
+            output && console.log(output);
             return;
         case 'test_finished':
             console.log(reporter.finishRun(message.payload));

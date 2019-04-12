@@ -46,7 +46,7 @@ const LolTestReporter: Reporter = {
             pluralize('file', numFiles)}...`,
 
     test: ({title, passed, fileName, error }) => {
-        return '\n' + (passed
+        return (passed
             ? logSuccess(title, fileName)
             : logFail(title, fileName, error));
     },
