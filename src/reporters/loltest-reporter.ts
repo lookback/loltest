@@ -1,6 +1,6 @@
 import { Reporter } from ".";
 import { SerializedError } from "../lib/serialize-error";
-import { green, red } from "../lib/colorize";
+import { green, red, dim } from "../lib/colorize";
 
 const formatError = (err: Error | SerializedError): string => {
     if (err.stack) {
@@ -13,10 +13,10 @@ const formatError = (err: Error | SerializedError): string => {
 };
 
 const logSuccess = (title: string, fileName: string) =>
-    `${green("✔︎")} ${fileName}: ${title}`;
+    `${green("✔︎")} ${fileName} ${dim('›')} ${title}`;
 
 const logFail = (title: string, fileName: string, error?: Error) =>
-    `${red("✗")} ${fileName}: ${title}\n${error && formatError(error)}\n`;
+    `${red("✗")} ${fileName} ${dim('›')} ${title}\n${error && formatError(error)}\n`;
 
 const pluralize = (noun: string, count: number) =>
     count > 1 ? `${noun}s` : noun;
