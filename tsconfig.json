@@ -9,7 +9,7 @@
 			"esnext.asynciterable",
 			"dom"
 		],
-		"target": "es2015",
+		"target": "es2018",
 		"esModuleInterop": true,
 		"module": "commonjs",
 		"inlineSourceMap": true,
