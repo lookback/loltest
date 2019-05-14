@@ -1,8 +1,30 @@
 {
   "name": "loltest",
   "version": "1.1.2",
-  "description": "Minimal test runner",
+  "private": true,
+  "description": "Minimal test runner for node. Tailored for Typescript",
+  "keywords": [
+    "node",
+    "typescript",
+    "test runner",
+    "minimal",
+    "tests",
+    "unit testing"
+  ],
   "author": "Martin Algesten",
+  "contributors": [
+    "Johan Brook <johan@lookback.io>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lookback/loltest.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lookback/loltest/issues"
+  },
+  "engines": {
+    "node": ">=8.12.0"
+  },
   "bin": {
     "loltest": "./cli.js"
   },
