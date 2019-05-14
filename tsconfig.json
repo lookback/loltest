@@ -15,7 +15,7 @@
 		"inlineSourceMap": true,
 		"declaration": true,
 		"moduleResolution": "node",
-		"outDir": "./build",
+		"outDir": "./build/cjs",
 		"noImplicitAny": true,
 		"noImplicitReturns": true,
 		"noImplicitThis": true,

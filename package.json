@@ -6,14 +6,16 @@
   "bin": {
     "loltest": "./cli.js"
   },
-  "main": "build/index.js",
+  "main": "build/cjs/index.js",
+  "module": "build/es6/index.js",
   "scripts": {
-    "build": "tsc",
     "pretest": "npm run lint",
     "test": "./cli.js",
-    "lint": "tslint --project ."
+    "lint": "tslint --project .",
+    "build": "npm run build-cjs & npm run build-es6",
+    "build-cjs": "tsc --module commonjs --outDir build/cjs",
+    "build-es6": "tsc --module es6 --outDir build/es6"
   },
-  "private": true,
   "devDependencies": {
     "@types/node": "^10.12.18",
     "tslint": "^5.15.0",
