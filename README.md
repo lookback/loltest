@@ -1,4 +1,4 @@
-![loltest](loltest.png | width=500)
+<img src="loltest.png" alt="Loltest" width="500">
 
 Bare minimum test runner for Typescript projects.
 
