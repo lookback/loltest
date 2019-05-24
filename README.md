@@ -1,7 +1,6 @@
-loltest
-=======
+![loltest](loltest.png)
 
-Bare minimum test runner for typescript.
+Bare minimum test runner for Typescript projects.
 
 ## Usage
 
