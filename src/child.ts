@@ -73,9 +73,12 @@ export interface TestErrorMessage {
 // test() puts tests into here.
 export const foundTests: TestRun[] = [];
 
-const sendMessage = (msg: Message) => {
-    if (process.send) process.send(msg);
-    else console.warn('Not in child process, cannot send message');
+const sendMessage = async (msg: Message): Promise<void> => {
+    if (!process.send) {
+        console.warn('Not in child process, cannot send message');
+        return;
+    }
+    await new Promise((rs) => process.send!(msg, rs));
 };
 
 // Child process test runner
@@ -103,7 +106,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         };
     });
 
-    sendMessage({
+    await sendMessage({
         kind: 'test_started',
         payload: {
             numFiles: testFiles.length,
@@ -113,30 +116,28 @@ export const runChild = async (conf: RunConf): Promise<void> => {
 
     const startTime = Date.now();
 
-    const allTests = testFiles.map(async (testFile) => await doTest(testFile));
+    const allTests = testFiles.map(doTest);
 
-    Promise.all(allTests)
-        .then((results) => {
-            const flat = flatten(results);
+    const results = await Promise.all(allTests);
+    const flat = flatten(results);
 
-            const testsAsBooleans: boolean[] = flat.map(t => !t.fail);
-            const allGood = testsAsBooleans.every(p => p);
-            const clean = allGood && !uncaughtException && !unhandledRejection;
+    const testsAsBooleans: boolean[] = flat.map(t => !t.fail);
+    const allGood = testsAsBooleans.every(p => p);
+    const clean = allGood && !uncaughtException && !unhandledRejection;
 
-            const finishedMsg: TestFinishedMessage = {
-                kind: 'test_finished',
-                payload: {
-                    total: testsAsBooleans.length,
-                    passed: testsAsBooleans.filter(p => p).length,
-                    failed: testsAsBooleans.filter(p => !p).length,
-                    duration: Date.now() - startTime,
-                },
-            };
+    const finishedMsg: TestFinishedMessage = {
+        kind: 'test_finished',
+        payload: {
+            total: testsAsBooleans.length,
+            passed: testsAsBooleans.filter(p => p).length,
+            failed: testsAsBooleans.filter(p => !p).length,
+            duration: Date.now() - startTime,
+        },
+    };
 
-            sendMessage(finishedMsg);
+    await sendMessage(finishedMsg);
 
-            process.exit(clean ? 0 : 1);
-        });
+    process.exit(clean ? 0 : 1);
 };
 
 const getTestPaths = (target: string): string[] => {
