@@ -39,12 +39,12 @@
     "build-es6": "tsc --module es6 --outDir build/es6"
   },
   "devDependencies": {
-    "@types/node": "^10.12.18",
-    "tslint": "^5.15.0",
-    "tslint-immutable": "^5.1.0",
-    "typescript": "^3.2.4"
+    "@types/node": "^12",
+    "tslint": "^5.18.0",
+    "tslint-immutable": "^6",
+    "typescript": "^3.5.3"
   },
   "dependencies": {
-    "ts-node": "^8.0.1"
+    "ts-node": "^8.3.0"
   }
 }
