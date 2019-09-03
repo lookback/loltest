@@ -31,6 +31,15 @@ $ npm test
 ✗ foo.ts It works: 2 deepEqual 4
 ```
 
+If you want to run for a single file:
+
+```bash
+$ npm test myfilename
+✗ myfilename.ts It works: 2 deepEqual 4
+```
+
+Note: Do not include the path to the test directory when specifying a single file.
+
 ### Select test file
 
 Write some starting letters of the test file name to run
