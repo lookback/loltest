@@ -4,6 +4,9 @@ import { runMain } from './main';
 import { mkParseArgs } from './lib/parse-cli-args';
 import { yellow } from './lib/colorize';
 
+/** The directory in which to search for test files. */
+const TEST_DIR_NAME = 'test';
+
 const parseArgs = mkParseArgs({
     reporter: String,
 }, ['fileFilter', 'testFilter']);
@@ -86,7 +89,7 @@ if (runConf) {
         });
 } else {
     const pathToSelf = argv[1]; // 0 is nodejs itself
-    const testDir = path.join(process.cwd(), 'test');
+    const testDir = path.join(process.cwd(), TEST_DIR_NAME);
 
     const cliArgs = parseArgs(argv.slice(2));
 
