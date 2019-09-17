@@ -179,12 +179,18 @@ const getTestPaths = (target: string): string[] => {
     }
 };
 
+/** foo/bar/baz.txt -> bar/baz.txt */
+const fileNameWithParent = (filePath: string) => {
+    const [file, parent, ] = filePath.split(path.sep).reverse();
+    return path.join(parent, file);
+};
+
 const doTest = (testFile: TestFile): Promise<TestResult[]> => {
-    const testFileName = path.basename(testFile.filePath);
+    const testFileName = fileNameWithParent(testFile.filePath);
     const tests = testFile.tests;
 
     if (!tests.length) {
-        console.log(`${testFileName}:`, 'No tests found');
+        console.log(yellow(`⚠ ${testFileName}: No tests found`));
         return Promise.resolve([]);
     }
 
