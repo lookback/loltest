@@ -60,7 +60,7 @@ const handleChildMessage = (reporter: Reporter, message: Message) => {
             console.log(reporter.finishRun(message.payload));
             return;
         case 'test_error_message':
-            console.error(reporter.bail(message.error && message.error.message));
+            console.error(reporter.bail(message.reason, message.error));
             return;
     }
     ((x: never) => { })(message); // assert exhaustive

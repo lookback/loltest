@@ -68,6 +68,7 @@ export interface TestStartedMessage {
 
 export interface TestErrorMessage {
     kind: 'test_error_message';
+    reason: string;
     error?: Error;
 }
 
@@ -190,7 +191,11 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
     const tests = testFile.tests;
 
     if (!tests.length) {
-        console.log(yellow(`⚠ ${testFileName}: No tests found`));
+        sendMessage({
+            kind: 'test_error_message',
+            reason: `${testFileName}: No tests found`,
+        });
+
         return Promise.resolve([]);
     }
 

@@ -1,6 +1,6 @@
 import { Reporter } from ".";
 import { SerializedError } from "../lib/serialize-error";
-import { green, red, dim } from "../lib/colorize";
+import { green, red, dim, yellow } from "../lib/colorize";
 
 const formatError = (err: Error | SerializedError): string => {
     if (err.stack) {
@@ -73,8 +73,10 @@ const LolTestReporter: Reporter = {
         ].join('\n');
     },
 
-    bail: (reason) =>
-        `${red('An error occurred!')}\n${reason}`,
+    bail: (reason, error) =>
+        `⚠ ${yellow(reason)}` + (error
+            ? `\n\n${formatError(error)}`
+            : ''),
 };
 
 export default LolTestReporter;
