@@ -13,4 +13,5 @@ export const colorize = (color: Color, str: any) => `${color}${String(str)}${Col
 
 export const red: ColorFn = colorize.bind(null, Color.Red);
 export const green: ColorFn = colorize.bind(null, Color.Green);
+export const yellow: ColorFn = colorize.bind(null, Color.Yellow);
 export const dim: ColorFn = colorize.bind(null, Color.Dim);

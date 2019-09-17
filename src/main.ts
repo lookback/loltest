@@ -15,12 +15,14 @@ interface RunConfiguration {
     testDir: string;
     reporter?: string;
     filter?: string;
+    testFilter?: string;
 }
 
 /** The main process which forks child processes for each test. */
 export const runMain = (self: string, config: RunConfiguration) => {
     const target = findTarget(config.testDir, config.filter);
-    const params = ['--child-runner', target];
+    const params = ['--child-runner', target,
+        ...(config.testFilter ? ['--test-filter', config.testFilter] : [])];
 
     const reporter = config.reporter ? reporters[config.reporter] : reporters.loltest;
 

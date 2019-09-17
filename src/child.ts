@@ -8,6 +8,7 @@ import { serializeError } from './lib/serialize-error';
 
 export interface RunConf {
     target: string;
+    testFilter?: string;
 }
 
 /**
@@ -70,7 +71,7 @@ export interface TestErrorMessage {
     error?: Error;
 }
 
-// test() puts tests into here.
+// test() puts tests into here. This is *per file*.
 export const foundTests: TestRun[] = [];
 
 const sendMessage = async (msg: Message): Promise<void> => {
@@ -97,14 +98,20 @@ export const runChild = async (conf: RunConf): Promise<void> => {
 
     const testFilePaths = getTestPaths(conf.target);
 
-    const testFiles: TestFile[] = testFilePaths.map<TestFile>(testPath => {
+    const allTestFiles: TestFile[] = testFilePaths.map<TestFile>(testPath => {
         require(testPath);
 
         return {
             filePath: testPath,
+            // "foundTests" is now filled with TestRuns. Remove them from the array
+            // for next test file.
             tests: foundTests.splice(0, foundTests.length),
         };
     });
+
+    const testFiles = !!conf.testFilter
+        ? getFilteredTests(allTestFiles, conf.testFilter)
+        : allTestFiles;
 
     await sendMessage({
         kind: 'test_started',
@@ -138,6 +145,20 @@ export const runChild = async (conf: RunConf): Promise<void> => {
     await sendMessage(finishedMsg);
 
     process.exit(clean ? 0 : 1);
+};
+
+/** Apply a text filter on **test case** titles in a list of files. Only test files
+ * whose test cases pass the filter will be returned.
+ */
+const getFilteredTests = (testFiles: TestFile[], filter: string): TestFile[] => {
+    const re = new RegExp(filter);
+
+    return testFiles
+        .map<TestFile>(t => ({
+            ...t,
+            tests: t.tests.filter(tt => re.test(tt.name)),
+        }))
+        .filter(t => t.tests.length > 0);
 };
 
 const getTestPaths = (target: string): string[] => {

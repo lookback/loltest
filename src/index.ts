@@ -1,16 +1,19 @@
 import path from 'path';
-import { foundTests, runChild, RunConf } from './child';
+import { foundTests, runChild, RunConf, TestRun } from './child';
 import { runMain } from './main';
 import { mkParseArgs } from './lib/parse-cli-args';
 
 const parseArgs = mkParseArgs({
-    '--reporter': String,
-});
+    reporter: String,
+}, ['fileFilter', 'testFilter']);
 
-/** Declare a test. */
-export type TestFunction = {
+/** Declares a test case to be run. */
+export type Test = {
+    /** Declare a test case with a name and function body. */
     (name: string, testfn: () => any | Promise<any>): void;
 
+    /** Declare a test case with a name and a `before` function.
+     * Optionally provide an `after` function. */
     <S>(
         name: string,
         before: () => S | Promise<S>,
@@ -18,6 +21,7 @@ export type TestFunction = {
         after?: (s: S) => any | Promise<any>,
     ): void;
 
+    /** Declare a test case with a name. */
     <S>(name: string, def: {
         before?: () => S | Promise<S>,
         testfn: (s: S) => any | Promise<any>,
@@ -25,37 +29,43 @@ export type TestFunction = {
     }): void;
 };
 
-/** Declare a test impl. */
-export const test: TestFunction = (name: string, ...as: any) => {
-    if (typeof as[0] == 'function') {
-        if (as.length == 1) {
-            foundTests.push({
+const createTest = (name: string, obj: any): TestRun => {
+    if (typeof obj[0] === 'function') {
+        if (obj.length === 1) {
+            return {
                 name,
-                testfn: as[0],
-            });
+                testfn: obj[0],
+            };
         } else {
-            foundTests.push({
+            return {
                 name,
-                before: as[0],
-                testfn: as[1],
-                after: as[2],
-            });
+                before: obj[0],
+                testfn: obj[1],
+                after: obj[2],
+            };
         }
     } else {
-        foundTests.push({
+        return {
             name,
-            ...as[0],
-        });
+            ...obj[0],
+        };
     }
+};
+
+export const test: Test = (name: string, ...as: any) => {
+    foundTests.push(createTest(name, as));
 };
 
 const argv = process.argv;
 
 // fish out the childrunner start arg
-const runConf: RunConf | null = (() => {
+const runConf = ((): RunConf | null => {
     const n = argv.indexOf('--child-runner');
+    const t = argv.indexOf('--test-filter');
+
     return n >= 0 ? {
         target: argv[n + 1],
+        testFilter: t !== -1 ? argv[t + 1] : undefined,
     } : null;
 })();
 
@@ -72,22 +82,12 @@ if (runConf) {
     const pathToSelf = argv[1]; // 0 is nodejs itself
     const testDir = path.join(process.cwd(), 'test');
 
-    // `loltest some-file --tap` vs `loltest --tap some-file`
-    const isPassingFilterFirst = !!argv[2]
-        && !argv[2].startsWith('--');
-
-    const filter = argv.slice(2).length > 1
-        ? isPassingFilterFirst ? argv[2] : argv[argv.length - 1]
-        : isPassingFilterFirst ? argv[2] : undefined;
-
-    const cliArgs = parseArgs(isPassingFilterFirst
-        ? argv.slice(3)
-        : argv.slice(2, Math.max(argv.length - 1, 3))
-    );
+    const cliArgs = parseArgs(argv.slice(2));
 
     runMain(pathToSelf, {
         testDir,
-        filter,
-        reporter: cliArgs['--reporter'],
+        reporter: cliArgs.reporter,
+        filter: cliArgs.fileFilter,
+        testFilter: cliArgs.testFilter,
     });
 }
