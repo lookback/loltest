@@ -2,6 +2,7 @@ import path from 'path';
 import { foundTests, runChild, RunConf, TestRun } from './child';
 import { runMain } from './main';
 import { mkParseArgs } from './lib/parse-cli-args';
+import { yellow } from './lib/colorize';
 
 const parseArgs = mkParseArgs({
     reporter: String,
@@ -30,6 +31,11 @@ export type Test = {
 };
 
 const createTest = (name: string, obj: any): TestRun => {
+    if (foundTests.find(t => t.name === name)) {
+        console.error(yellow(`Duplicate test case name: "${name}"`));
+        process.exit(1);
+    }
+
     if (typeof obj[0] === 'function') {
         if (obj.length === 1) {
             return {
