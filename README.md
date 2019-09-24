@@ -2,6 +2,17 @@
 
 Bare minimum test runner for Typescript projects.
 
+## CLI
+
+```
+loltest [--reporter=<string>] [file filter] [test name filter]
+
+--reporter=<loltest|tap>: Which reporter to show results with. Defaults to 'loltest'
+
+[file filter]: string. If provided, we'll only include files whose names start with this string.
+[test name filter]: string|pattern. If provided, we'll only include tests whose names match this pattern.
+```
+
 ## Usage
 
 In `package.json`:
@@ -27,28 +38,45 @@ Run like this:
 
 ```bash
 $ npm test
-...
-✗ foo.ts It works: 2 deepEqual 4
 ```
 
-If you want to run for a single file:
-
-```bash
-$ npm test myfilename
-✗ myfilename.ts It works: 2 deepEqual 4
-```
-
-Note: Do not include the path to the test directory when specifying a single file.
+That's it!
 
 ### Select test file
 
-Write some starting letters of the test file name to run
-the tests in that file.
+If you want to run for a single file, provide a portion of the filename as argument to `loltest`:
 
 ```bash
-$ npx loltest fo
-# Runs test/foo.ts
+$ ls test/
+one-test.ts  another-test.ts
+$ npm test -- another
+# Only another-test.ts will be run
 ```
+
+**Note:** Do not include the path to the test directory when specifying a single file.
+
+### Single test in file
+
+If you want to run a subset of tests in a file, you can provide a filter on their names as a second argument to `loltest`: 
+
+```ts
+// my-test.ts
+import { test } from 'loltest';
+
+test('Test for normal array', () => { /* ...  */ });
+
+test('Test for empty array', () => { /* ...  */ });
+
+test('Test for null array', () => { /* ...  */ });
+```
+```bash
+$ npm test -- my-test empty
+# Will only run tests matching /empty/
+$ npm test -- my-test "empty|null"
+# Will only run tests matching /empty|null/
+```
+
+**Note:** Your shell might dislike some regex symbols in the test name filter. You might want to wrap them in quotes.
 
 ### Reporters
 
