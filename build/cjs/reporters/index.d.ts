@@ -35,5 +35,5 @@ export interface Reporter {
     test: (opts: TestCaseReport) => ReporterOutput;
     /** Call after test run ends */
     finishRun: (stats: ReporterStats) => ReporterOutput;
-    bail: (reason?: string) => ReporterOutput;
+    bail: (reason: string, error?: Error) => ReporterOutput;
 }

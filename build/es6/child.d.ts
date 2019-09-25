@@ -1,6 +1,7 @@
 import { TestCaseReport, ReporterStats, ReporterStart } from './reporters';
 export interface RunConf {
     target: string;
+    testFilter?: string;
 }
 /**
  * A single run of a test case.
@@ -36,6 +37,7 @@ export interface TestStartedMessage {
 }
 export interface TestErrorMessage {
     kind: 'test_error_message';
+    reason: string;
     error?: Error;
 }
 export declare const foundTests: TestRun[];

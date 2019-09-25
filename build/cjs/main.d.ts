@@ -2,6 +2,7 @@ interface RunConfiguration {
     testDir: string;
     reporter?: string;
     filter?: string;
+    testFilter?: string;
 }
 /** The main process which forks child processes for each test. */
 export declare const runMain: (self: string, config: RunConfiguration) => void;

@@ -10,5 +10,6 @@ declare type ColorFn = (str: any) => string;
 export declare const colorize: (color: Color, str: any) => string;
 export declare const red: ColorFn;
 export declare const green: ColorFn;
+export declare const yellow: ColorFn;
 export declare const dim: ColorFn;
 export {};
