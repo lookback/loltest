@@ -57,17 +57,17 @@ const outputDirectives = ({duration}: { duration: number  }) =>
     `${duration !== 0 ? ' # time=' + duration + 'ms': ''}`;
 
 const TAPReporter: Reporter = {
-    startRun: ({ numFiles, total }) => `TAP version 13\n1..${total}`,
+    onRunStart: ({ numFiles, total }) => `TAP version 13\n1..${total}`,
 
-    test: ({ title, passed, index, error, duration }) =>
+    onTestResult: ({ title, passed, index, error, duration }) =>
         '\n' + (passed ? logSuccess(title, index) : logFailure(title, index, error)) +
         outputDirectives({ duration }),
 
-    finishRun: () => {
+    onRunComplete: () => {
         return "";
     },
 
-    bail: reason =>
+    onError: reason =>
         // This is lol: http://testanything.org/tap-version-13-specification.html#bail-out
         `Bail out! ${reason}`,
 };

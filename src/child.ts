@@ -47,8 +47,8 @@ interface Fail extends TestResult {
 
 export type Message =
     | TestResultMessage
-    | TestFinishedMessage
-    | TestStartedMessage
+    | RunCompleteMessage
+    | RunStartMessage
     | TestErrorMessage;
 
 export interface TestResultMessage {
@@ -56,18 +56,18 @@ export interface TestResultMessage {
     payload: TestCaseReport;
 }
 
-export interface TestFinishedMessage {
-    kind: 'test_finished';
+export interface RunCompleteMessage {
+    kind: 'run_complete';
     payload: ReporterStats;
 }
 
-export interface TestStartedMessage {
-    kind: 'test_started';
+export interface RunStartMessage {
+    kind: 'run_start';
     payload: ReporterStart;
 }
 
 export interface TestErrorMessage {
-    kind: 'test_error_message';
+    kind: 'test_error';
     reason: string;
     error?: Error;
 }
@@ -115,7 +115,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         : allTestFiles;
 
     await sendMessage({
-        kind: 'test_started',
+        kind: 'run_start',
         payload: {
             numFiles: testFiles.length,
             total: testFiles.reduce((acc, testFile) => acc + testFile.tests.length, 0),
@@ -133,8 +133,8 @@ export const runChild = async (conf: RunConf): Promise<void> => {
     const allGood = testsAsBooleans.every(p => p);
     const clean = allGood && !uncaughtException && !unhandledRejection;
 
-    const finishedMsg: TestFinishedMessage = {
-        kind: 'test_finished',
+    const finishedMsg: RunCompleteMessage = {
+        kind: 'run_complete',
         payload: {
             total: testsAsBooleans.length,
             passed: testsAsBooleans.filter(p => p).length,
@@ -192,7 +192,7 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
 
     if (!tests.length) {
         sendMessage({
-            kind: 'test_error_message',
+            kind: 'test_error',
             reason: `${testFileName}: No tests found`,
         });
 

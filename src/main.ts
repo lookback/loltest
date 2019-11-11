@@ -49,18 +49,18 @@ export const runMain = (self: string, config: RunConfiguration) => {
 
 const handleChildMessage = (reporter: Reporter, message: Message) => {
     switch (message.kind) {
-        case 'test_started':
-            console.log(reporter.startRun(message.payload));
+        case 'run_start':
+            console.log(reporter.onRunStart(message.payload));
             return;
         case 'test_result':
-            const output = reporter.test(message.payload);
+            const output = reporter.onTestResult(message.payload);
             output && console.log(output);
             return;
-        case 'test_finished':
-            console.log(reporter.finishRun(message.payload));
+        case 'run_complete':
+            console.log(reporter.onRunComplete(message.payload));
             return;
-        case 'test_error_message':
-            console.error(reporter.bail(message.reason, message.error));
+        case 'test_error':
+            console.error(reporter.onError(message.reason, message.error));
             return;
     }
     ((x: never) => { })(message); // assert exhaustive

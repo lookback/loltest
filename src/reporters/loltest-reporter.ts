@@ -50,18 +50,18 @@ Ran 29 tests in 3.01s
 ```
  */
 const LolTestReporter: Reporter = {
-    startRun: ({ total, numFiles }) =>
+    onRunStart: ({ total, numFiles }) =>
         `Found ${total} ${pluralize('test', total)} in ${numFiles} ${
             pluralize('file', numFiles)}...`,
 
-    test: ({title, passed, fileName, error, duration }) => {
+    onTestResult: ({title, passed, fileName, error, duration }) => {
         return (passed
             ? logSuccess(title, fileName, duration)
             : logFail(title, fileName, duration, error));
     },
 
     // "Ran X tests. Y passed, Z failed"
-    finishRun: ({ total, passed, failed, duration }) => {
+    onRunComplete: ({ total, passed, failed, duration }) => {
         return [
             `\n\nRan ${total} ${pluralize('test', total)} in ${formatTime(duration)}`,
             `${passed ? green(passed + ' passed') : passed + ' passed'}, ${
@@ -69,7 +69,7 @@ const LolTestReporter: Reporter = {
         ].join('\n');
     },
 
-    bail: (reason, error) =>
+    onError: (reason, error) =>
         `⚠ ${yellow(reason)}` + (error
             ? `\n\n${formatError(error)}`
             : ''),

@@ -34,14 +34,15 @@ export interface ReporterStats {
 export type ReporterOutput = string | undefined;
 
 export interface Reporter {
-    /** Call before test run starts */
-    startRun: (opts: ReporterStart) => ReporterOutput;
+    /** Call before test run starts. */
+    onRunStart: (opts: ReporterStart) => ReporterOutput;
 
-    /** Call for each test case */
-    test: (opts: TestCaseReport) => ReporterOutput;
+    /** Call for each test case when it's finished. */
+    onTestResult: (opts: TestCaseReport) => ReporterOutput;
 
-    /** Call after test run ends */
-    finishRun: (stats: ReporterStats) => ReporterOutput;
+    /** Call after test run ends. */
+    onRunComplete: (stats: ReporterStats) => ReporterOutput;
 
-    bail: (reason: string, error?: Error) => ReporterOutput;
+    /** Call when an error occurred in *setting up the test*, not within the test itself. */
+    onError: (reason: string, error?: Error) => ReporterOutput;
 }
