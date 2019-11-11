@@ -41,7 +41,7 @@
     "@types/node": "^12",
     "tslint": "^5.18.0",
     "tslint-immutable": "^6",
-    "typescript": "^3.5.3"
+    "typescript": "^3.7.2"
   },
   "dependencies": {
     "ts-node": "^8.3.0"
