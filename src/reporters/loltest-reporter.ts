@@ -1,6 +1,8 @@
 import { Reporter } from ".";
 import { SerializedError } from "../lib/serialize-error";
 import { green, red, dim, yellow } from "../lib/colorize";
+import { pluralize } from "../lib/pluralize";
+import { formatTime } from "../lib/format-time";
 
 const formatError = (err: Error | SerializedError): string => {
     if (err.stack) {
@@ -15,9 +17,6 @@ const formatError = (err: Error | SerializedError): string => {
 /** Don't print durations (in milliseconds) below this threshold. */
 const SHOW_TIME_THRESHOLD_MS = 20;
 
-const formatTime = (ms: number) =>
-    ms >= 1000 ? `${ms / 1E3}s` : `${ms}ms`;
-
 const logSuccess = (title: string, fileName: string, duration: number) =>
     `${green("✔︎")} ${fileName} ${dim('›')} ${title}${
         duration > SHOW_TIME_THRESHOLD_MS ? dim(` (${formatTime(duration)})`) : ''}`;
@@ -26,9 +25,6 @@ const logFail = (title: string, fileName: string, duration: number, error?: Erro
     `${red("✗")} ${red(fileName)} ${dim('›')} ${title}${
         duration > SHOW_TIME_THRESHOLD_MS ? dim(` (${formatTime(duration)})`) : ''}
 ${error && formatError(error)}\n`;
-
-const pluralize = (noun: string, count: number) =>
-    count > 1 ? `${noun}s` : noun;
 
 /**
  * A plain reporter.
