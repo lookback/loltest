@@ -5,12 +5,15 @@ Bare minimum test runner for Typescript projects.
 ## CLI
 
 ```
-loltest [--reporter=<string>] [file filter] [test name filter]
-
---reporter=<loltest|tap>: Which reporter to show results with. Defaults to 'loltest'
+loltest [file filter] [test name filter]
 
 [file filter]: string. If provided, we'll only include files whose names start with this string.
 [test name filter]: string|pattern. If provided, we'll only include tests whose names match this pattern.
+
+Env vars
+==========
+LOLTEST_TEST_DIR: string. Change test directory from the default `test` in current working directory.
+LOLTEST_REPORTER: 'loltest | loltest2 | tap'. Change from default `loltest`.
 ```
 
 ## Usage
@@ -83,12 +86,13 @@ $ npm test -- my-test "empty|null"
 We bundle these reporters:
 
 - `loltest` *(default)*
+- `loltest2`
 - `tap`
 
-Choose between reporters with the `--reporter` CLI flag:
+Choose between reporters with the `LOLTEST_REPORTER` environment variable.
 
 ```bash
-$ npx loltest --reporter=<reporter>
+$ LOLTEST_REPORTER=tap npx loltest
 ```
 
 # Layout

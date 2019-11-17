@@ -3,13 +3,12 @@ import { foundTests, runChild, RunConf, TestRun } from './child';
 import { runMain } from './main';
 import { mkParseArgs } from './lib/parse-cli-args';
 import { yellow } from './lib/colorize';
+import { envToConf } from './lib/env-to-config';
 
 /** The directory in which to search for test files. */
-const TEST_DIR_NAME = 'test';
+const DEFAULT_TEST_DIR = 'test';
 
-const parseArgs = mkParseArgs({
-    reporter: String,
-}, ['fileFilter', 'testFilter']);
+const parseArgs = mkParseArgs({}, ['fileFilter', 'testFilter']);
 
 /** Declares a test case to be run. */
 export type Test = {
@@ -88,15 +87,17 @@ if (runConf) {
             process.exit(1);
         });
 } else {
+    const envConf = envToConf(process.env, ['LOLTEST_REPORTER', 'LOLTEST_TEST_DIR']);
+
     const pathToSelf = argv[1]; // 0 is nodejs itself
-    const testDir = path.join(process.cwd(), TEST_DIR_NAME);
+    const testDir = path.join(process.cwd(), envConf.loltestTestDir || DEFAULT_TEST_DIR);
 
     const cliArgs = parseArgs(argv.slice(2));
 
     runMain(pathToSelf, {
-        testDir,
-        reporter: cliArgs.reporter,
         filter: cliArgs.fileFilter,
         testFilter: cliArgs.testFilter,
+        reporter: envConf.loltestReporter,
+        testDir,
     });
 }

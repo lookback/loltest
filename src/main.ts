@@ -13,7 +13,7 @@ const reporters: {[key: string]: Reporter } = {
     loltest2: LolTest2Reporter,
 };
 
-interface RunConfiguration {
+export interface RunConfiguration {
     testDir: string;
     reporter?: string;
     filter?: string;
@@ -26,12 +26,7 @@ export const runMain = (self: string, config: RunConfiguration) => {
     const params = ['--child-runner', target,
         ...(config.testFilter ? ['--test-filter', config.testFilter] : [])];
 
-    const reporter = config.reporter ? reporters[config.reporter] : reporters.loltest;
-
-    if (!reporter) {
-        console.error('Unknown reporter:', config.reporter);
-        process.exit(1);
-    }
+    const reporter = reporters[config.reporter || 'loltest'];
 
     const child = child_process.fork(self, params, {
         // See https://nodejs.org/api/child_process.html#child_process_options_stdio
