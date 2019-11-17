@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { AssertionError } from 'assert';
 import { scan } from "./lib/scan";
-import { TestCaseReport, ReporterStats, ReporterStart } from './reporters';
+import { TestCaseReport, ReporterStats, ReporterStart, TestCase } from './reporters';
 import { flatten } from './lib/flatten';
 import { serializeError } from './lib/serialize-error';
 
@@ -49,7 +49,13 @@ export type Message =
     | TestResultMessage
     | RunCompleteMessage
     | RunStartMessage
-    | TestErrorMessage;
+    | TestErrorMessage
+    | TestStartMessage;
+
+export interface TestStartMessage {
+    kind: 'test_start';
+    payload: TestCase;
+}
 
 export interface TestResultMessage {
     kind: 'test_result';
@@ -114,11 +120,14 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         ? getFilteredTests(allTestFiles, conf.testFilter)
         : allTestFiles;
 
+    const numFiles = testFiles.length;
+    const totalNumTests = testFiles.reduce((acc, testFile) => acc + testFile.tests.length, 0);
+
     await sendMessage({
         kind: 'run_start',
         payload: {
-            numFiles: testFiles.length,
-            total: testFiles.reduce((acc, testFile) => acc + testFile.tests.length, 0),
+            numFiles,
+            total: totalNumTests,
         },
     });
 
@@ -140,6 +149,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
             passed: testsAsBooleans.filter(p => p).length,
             failed: testsAsBooleans.filter(p => !p).length,
             duration: Date.now() - startTime,
+            numFiles,
         },
     };
 
@@ -202,6 +212,12 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
     const all = tests.map(
         async ({ name, before, testfn, after }, index): Promise<TestResult> => {
 
+        const testCase = {
+            title: name,
+            fileName: testFileName,
+            index,
+        };
+
         // run before and save the args
         const args = await tryRun(testFileName, name, before);
 
@@ -218,6 +234,11 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
         }
 
         const testResult = await tryRun<TestResult>(testFileName, name, async () => {
+            sendMessage(<TestStartMessage>{
+                kind: 'test_start',
+                payload: testCase,
+            });
+
             const startedAt = Date.now();
             await testfn(args);
             const duration = Date.now() - startedAt;
@@ -230,13 +251,11 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
             };
         });
 
-        sendMessage({
+        sendMessage(<TestResultMessage>{
             kind: 'test_result',
             payload: {
-                title: testResult.name,
-                fileName: testResult.filename,
+                testCase,
                 passed: !testResult.fail,
-                index,
                 error: testResult.error ? serializeError(testResult.error) : undefined,
                 duration: testResult.duration,
             },

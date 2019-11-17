@@ -54,10 +54,14 @@ const LolTestReporter: Reporter = {
         `Found ${total} ${pluralize('test', total)} in ${numFiles} ${
             pluralize('file', numFiles)}...`,
 
-    onTestResult: ({title, passed, fileName, error, duration }) => {
+    onTestStart: () => {
+        return undefined;
+    },
+
+    onTestResult: ({testCase, passed, error, duration }) => {
         return (passed
-            ? logSuccess(title, fileName, duration)
-            : logFail(title, fileName, duration, error));
+            ? logSuccess(testCase.title, testCase.fileName, duration)
+            : logFail(testCase.title, testCase.fileName, duration, error));
     },
 
     // "Ran X tests. Y passed, Z failed"

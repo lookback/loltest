@@ -1,19 +1,23 @@
 import { SerializedError } from "../lib/serialize-error";
 
+export interface TestCase {
+    /** The name of the test case */
+    title: string;
+    /** What order does this test have? */
+    index: number;
+    /** The filename of this test */
+    fileName: string;
+}
+
 export interface ReporterStart {
     total: number;
     numFiles: number;
 }
 
 export interface TestCaseReport {
-    /** The name of the test case */
-    title: string;
-    /** What order does this test have? */
-    index: number;
+    testCase: TestCase;
     /** Indicates whether the test passed or not */
     passed: boolean;
-    /** The filename of this test */
-    fileName: string;
     /** Error, if `passed` is false */
     error?: Error | SerializedError;
     /** Duration to run this test, in milliseconds */
@@ -29,6 +33,8 @@ export interface ReporterStats {
     failed: number;
     /** Duration in milliseconds */
     duration: number;
+    /** Total number of test files found. */
+    numFiles: number;
 }
 
 export type ReporterOutput = string | undefined;
@@ -37,7 +43,10 @@ export interface Reporter {
     /** Call before test run starts. */
     onRunStart: (opts: ReporterStart) => ReporterOutput;
 
-    /** Call for each test case when it's finished. */
+    /** Call before test case starts. */
+    onTestStart: (testCase: TestCase) => ReporterOutput;
+
+    /** Call for a finished test case. */
     onTestResult: (opts: TestCaseReport) => ReporterOutput;
 
     /** Call after test run ends. */

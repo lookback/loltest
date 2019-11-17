@@ -59,8 +59,15 @@ const outputDirectives = ({duration}: { duration: number  }) =>
 const TAPReporter: Reporter = {
     onRunStart: ({ numFiles, total }) => `TAP version 13\n1..${total}`,
 
-    onTestResult: ({ title, passed, index, error, duration }) =>
-        '\n' + (passed ? logSuccess(title, index) : logFailure(title, index, error)) +
+    onTestStart: () => {
+        return undefined;
+    },
+
+    onTestResult: ({ testCase, passed, error, duration }) =>
+        '\n' +
+        (passed
+            ? logSuccess(testCase.title, testCase.index)
+            : logFailure(testCase.title, testCase.index, error)) +
         outputDirectives({ duration }),
 
     onRunComplete: () => {
