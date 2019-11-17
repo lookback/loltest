@@ -1,9 +1,10 @@
 import path from 'path';
 import { foundTests, runChild, RunConf, TestRun } from './child';
-import { runMain } from './main';
+import { runMain, RunConfiguration } from './main';
 import { mkParseArgs } from './lib/parse-cli-args';
 import { yellow } from './lib/colorize';
 import { envToConf } from './lib/env-to-config';
+import { parseGlobalConf } from './lib/global-conf';
 
 /** The directory in which to search for test files. */
 const DEFAULT_TEST_DIR = 'test';
@@ -87,17 +88,27 @@ if (runConf) {
             process.exit(1);
         });
 } else {
+    // Read conf from ~/.loltest
+    const globalConf = parseGlobalConf<RunConfiguration>('.loltest');
+    // Read local conf from env vars
     const envConf = envToConf(process.env, ['LOLTEST_REPORTER', 'LOLTEST_TEST_DIR']);
 
+    const testDir = path.join(process.cwd(), envConf.loltestTestDir ||
+        globalConf.testDir ||
+        DEFAULT_TEST_DIR);
+
+    const conf: Pick<RunConfiguration, 'reporter' | 'testDir'> = {
+        reporter: envConf.loltestReporter || globalConf.reporter,
+        testDir,
+    };
+
     const pathToSelf = argv[1]; // 0 is nodejs itself
-    const testDir = path.join(process.cwd(), envConf.loltestTestDir || DEFAULT_TEST_DIR);
 
     const cliArgs = parseArgs(argv.slice(2));
 
     runMain(pathToSelf, {
         filter: cliArgs.fileFilter,
         testFilter: cliArgs.testFilter,
-        reporter: envConf.loltestReporter,
-        testDir,
+        ...conf,
     });
 }
