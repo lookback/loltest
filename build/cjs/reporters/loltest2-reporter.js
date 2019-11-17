@@ -1,0 +1,88 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const pluralize_1 = require("../lib/pluralize");
+const format_time_1 = require("../lib/format-time");
+const colorize_1 = require("../lib/colorize");
+const INDENT = '  ';
+/** Pad trail and beginning of string with whitespace to a desired total length. */
+const pad = (str, len) => str.trim().padEnd(len).padStart(len + (str.length / 2));
+const formatError = (err, indent = 0) => {
+    if (err.stack) {
+        const c = err.stack.split('\n');
+        const t = err.message.split('\n').join('\n' + INDENT.repeat(indent + 1));
+        return [t, c[1]].join('\n' + INDENT.repeat(indent));
+    }
+    else {
+        return err.message.split('\n').join('\n' + INDENT.repeat(indent + 1));
+    }
+};
+const badge = (color, text) => colorize_1.colorize({ back: color, front: colorize_1.FgColor.Black }, pad(text, 6));
+/** Don't print durations (in milliseconds) below this threshold. */
+const SHOW_TIME_THRESHOLD_MS = 20;
+const time = (duration) => duration > SHOW_TIME_THRESHOLD_MS
+    ? colorize_1.dim(` (${format_time_1.formatTime(duration)})`)
+    : "";
+const logSuccess = (title, fileName, duration) => `${badge(colorize_1.BgColor.Green, "PASS")} ${colorize_1.colorize(colorize_1.Effect.Bold, fileName)} ${colorize_1.dim("›")} ${title}${time(duration)}`;
+const logFail = (title, fileName, duration, error) => `${badge(colorize_1.BgColor.Red, "FAIL")} ${colorize_1.colorize(colorize_1.Effect.Bold, fileName)} ${colorize_1.dim("›")} ${title}${time(duration)}`;
+const LolTest2Reporter = {
+    fails: [],
+    failedFiles: new Set(),
+    passedFiles: new Set(),
+    onRunStart: ({ total, numFiles }) => `${colorize_1.colorize(colorize_1.Effect.Underline, `Running ${total} ${pluralize_1.pluralize("test", total)} in ${numFiles} ${pluralize_1.pluralize("file", numFiles)}...\n`)}`,
+    onTestStart: testCase => undefined,
+    // `${colorize(
+    //     { back: BgColor.Yellow, front: FgColor.Black },
+    //     " START "
+    // )} ${testCase.fileName} ${dim("›")} ${testCase.title}`,
+    onTestResult(report) {
+        const { testCase, passed, error, duration } = report;
+        if (!passed) {
+            this.fails.push({
+                testCase,
+                error: error || new Error('Unknown fail'),
+                duration,
+            });
+            this.failedFiles.add(testCase.fileName);
+            this.passedFiles.delete(testCase.fileName);
+        }
+        else if (!this.failedFiles.has(testCase.fileName)) {
+            this.passedFiles.add(testCase.fileName);
+        }
+        return passed
+            ? logSuccess(testCase.title, testCase.fileName, duration)
+            : logFail(testCase.title, testCase.fileName, duration, error);
+    },
+    // "Ran X tests. Y passed, Z failed"
+    onRunComplete({ total, passed, failed, duration, numFiles }) {
+        const fails = this.fails.map(({ testCase, error, duration }, idx) => [
+            testCase
+                ? `${INDENT}${colorize_1.red(`${idx + 1}) ${testCase.fileName}`)} ${colorize_1.dim("›")} ${colorize_1.red(testCase.title)}${duration ? ` (${format_time_1.formatTime(duration)})` : ''}\n`
+                : undefined,
+            INDENT + formatError(error, 1),
+        ].filter(Boolean).join('\n')).join('\n\n');
+        return [
+            fails.trim().length
+                ? colorize_1.colorize(colorize_1.Effect.Underline, '\n\nSummary of all failed tests\n\n')
+                : colorize_1.green('\n\n✔︎ All is fine!'),
+            fails.trim().length ? fails : undefined,
+            '\n',
+            `${colorize_1.colorize(colorize_1.Effect.Bold, 'Files')}:\t\t${[
+                this.failedFiles.size ? colorize_1.red(`${this.failedFiles.size} failed`) : undefined,
+                this.passedFiles.size ? colorize_1.green(`${this.passedFiles.size} passed`) : `${this.passedFiles.size} passed`,
+            ].filter(Boolean).join(', ')}, ${numFiles} total`,
+            `${colorize_1.colorize(colorize_1.Effect.Bold, 'Tests')}:\t\t${[
+                failed ? colorize_1.red(`${failed} failed`) : undefined,
+                passed ? colorize_1.green(`${passed} passed`) : `${passed} passed`,
+            ].filter(Boolean).join(', ')}, ${total} total`,
+            `${colorize_1.colorize(colorize_1.Effect.Bold, 'Duration')}:\t${format_time_1.formatTime(duration)} (${format_time_1.formatTime(Number((duration / total).toFixed(1)))} avg)`,
+        ].filter(Boolean).join("\n");
+    },
+    onError(reason, error) {
+        this.fails.push({
+            error: error || new Error('Unknown error'),
+        });
+        return `${badge(colorize_1.BgColor.Yellow, 'ERR')} ${reason}`;
+    },
+};
+exports.default = LolTest2Reporter;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibG9sdGVzdDItcmVwb3J0ZXIuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvcmVwb3J0ZXJzL2xvbHRlc3QyLXJlcG9ydGVyLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQ0EsZ0RBQTZDO0FBQzdDLG9EQUFnRDtBQUNoRCw4Q0FBc0Y7QUFHdEYsTUFBTSxNQUFNLEdBQUcsSUFBSSxDQUFDO0FBRXBCLG1GQUFtRjtBQUNuRixNQUFNLEdBQUcsR0FBRyxDQUFDLEdBQVcsRUFBRSxHQUFXLEVBQVUsRUFBRSxDQUM3QyxHQUFHLENBQUMsSUFBSSxFQUFFLENBQUMsTUFBTSxDQUFDLEdBQUcsQ0FBQyxDQUFDLFFBQVEsQ0FBQyxHQUFHLEdBQUcsQ0FBQyxHQUFHLENBQUMsTUFBTSxHQUFHLENBQUMsQ0FBQyxDQUFDLENBQUM7QUFFNUQsTUFBTSxXQUFXLEdBQUcsQ0FBQyxHQUE0QixFQUFFLE1BQU0sR0FBRyxDQUFDLEVBQVUsRUFBRTtJQUNyRSxJQUFJLEdBQUcsQ0FBQyxLQUFLLEVBQUU7UUFDWCxNQUFNLENBQUMsR0FBRyxHQUFHLENBQUMsS0FBSyxDQUFDLEtBQUssQ0FBQyxJQUFJLENBQUMsQ0FBQztRQUNoQyxNQUFNLENBQUMsR0FBRyxHQUFHLENBQUMsT0FBTyxDQUFDLEtBQUssQ0FBQyxJQUFJLENBQUMsQ0FBQyxJQUFJLENBQUMsSUFBSSxHQUFHLE1BQU0sQ0FBQyxNQUFNLENBQUMsTUFBTSxHQUFHLENBQUMsQ0FBQyxDQUFDLENBQUM7UUFDekUsT0FBTyxDQUFDLENBQUMsRUFBRSxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQyxJQUFJLENBQUMsSUFBSSxHQUFHLE1BQU0sQ0FBQyxNQUFNLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQztLQUN2RDtTQUFNO1FBQ0gsT0FBTyxHQUFHLENBQUMsT0FBTyxDQUFDLEtBQUssQ0FBQyxJQUFJLENBQUMsQ0FBQyxJQUFJLENBQUMsSUFBSSxHQUFHLE1BQU0sQ0FB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
