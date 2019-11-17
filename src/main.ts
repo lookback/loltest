@@ -5,10 +5,12 @@ import { Message } from './child';
 import { Reporter } from './reporters';
 import TAPReporter from './reporters/tap-reporter';
 import LolTestReporter from './reporters/loltest-reporter';
+import LolTest2Reporter from './reporters/loltest2-reporter';
 
 const reporters: {[key: string]: Reporter } = {
     tap: TAPReporter,
     loltest: LolTestReporter,
+    loltest2: LolTest2Reporter,
 };
 
 interface RunConfiguration {
