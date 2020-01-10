@@ -7,7 +7,7 @@ import TAPReporter from './reporters/tap-reporter';
 import LolTestReporter from './reporters/loltest-reporter';
 import LolTest2Reporter from './reporters/loltest2-reporter';
 
-const reporters: {[key: string]: Reporter } = {
+const reporters: { [key: string]: Reporter } = {
     tap: TAPReporter,
     loltest: LolTestReporter,
     loltest2: LolTest2Reporter,
@@ -23,8 +23,11 @@ export interface RunConfiguration {
 /** The main process which forks child processes for each test. */
 export const runMain = (self: string, config: RunConfiguration) => {
     const target = findTarget(config.testDir, config.filter);
-    const params = ['--child-runner', target,
-        ...(config.testFilter ? ['--test-filter', config.testFilter] : [])];
+    const params = [
+        '--child-runner',
+        target,
+        ...(config.testFilter ? ['--test-filter', config.testFilter] : []),
+    ];
 
     const reporter = reporters[config.reporter || 'loltest'];
 
@@ -32,12 +35,12 @@ export const runMain = (self: string, config: RunConfiguration) => {
         // See https://nodejs.org/api/child_process.html#child_process_options_stdio
         // We pipe stdin, stdout, stderr between the parent and child process,
         // and enable IPC (Inter Process Communication) to pass messages.
-        stdio: [ process.stdin, process.stdout, process.stderr, 'ipc' ],
+        stdio: [process.stdin, process.stdout, process.stderr, 'ipc'],
     });
 
     child.on('message', (m: Message) => handleChildMessage(reporter, m));
 
-    child.on('exit', childExit => {
+    child.on('exit', (childExit) => {
         // die when child dies.
         const code = childExit ? childExit : 0;
         process.exit(code);
@@ -64,26 +67,23 @@ const handleChildMessage = (reporter: Reporter, message: Message) => {
             console.error(reporter.onError(message.reason, message.error));
             return;
     }
-    ((x: never) => { })(message); // assert exhaustive
+    ((x: never) => {})(message); // assert exhaustive
 };
 
 /** Find a target to start child process from. */
 export const findTarget = (testDir: string, filter?: string): string => {
     if (filter) {
         const jsFiles = scan(testDir);
-        const possible = jsFiles
-            .filter(f => f.startsWith(filter));
+        const possible = jsFiles.filter((f) => f.startsWith(filter));
         possible.sort((f1, f2) => f1.length - f2.length);
         const file = possible[0]; // shortest wins
         if (file) {
             return path.join(testDir, file);
         } else {
-            console.error("No test file found for:", filter);
+            console.error('No test file found for:', filter);
             process.exit(1);
         }
     }
 
     return testDir;
 };
-
-

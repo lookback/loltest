@@ -22,19 +22,22 @@ export type Test = {
         name: string,
         before: () => S | Promise<S>,
         testfn: (s: S) => any | Promise<any>,
-        after?: (s: S) => any | Promise<any>,
+        after?: (s: S) => any | Promise<any>
     ): void;
 
     /** Declare a test case with a name. */
-    <S>(name: string, def: {
-        before?: () => S | Promise<S>,
-        testfn: (s: S) => any | Promise<any>,
-        after?: (s: S) => any | Promise<any>,
-    }): void;
+    <S>(
+        name: string,
+        def: {
+            before?: () => S | Promise<S>;
+            testfn: (s: S) => any | Promise<any>;
+            after?: (s: S) => any | Promise<any>;
+        }
+    ): void;
 };
 
 const createTest = (name: string, obj: any): TestRun => {
-    if (foundTests.find(t => t.name === name)) {
+    if (foundTests.find((t) => t.name === name)) {
         console.error(yellow(`Duplicate test case name: "${name}"`));
         process.exit(1);
     }
@@ -72,30 +75,35 @@ const runConf = ((): RunConf | null => {
     const n = argv.indexOf('--child-runner');
     const t = argv.indexOf('--test-filter');
 
-    return n >= 0 ? {
-        target: argv[n + 1],
-        testFilter: t !== -1 ? argv[t + 1] : undefined,
-    } : null;
+    return n >= 0
+        ? {
+              target: argv[n + 1],
+              testFilter: t !== -1 ? argv[t + 1] : undefined,
+          }
+        : null;
 })();
 
 /** Switch depending on whether we're the forked child or not. */
 if (runConf) {
     // run as child
     require('ts-node').register(); // so we can require .ts-files
-    runChild(runConf)
-        .catch(e => {
-            console.log("Tests failed", e);
-            process.exit(1);
-        });
+    runChild(runConf).catch((e) => {
+        console.log('Tests failed', e);
+        process.exit(1);
+    });
 } else {
     // Read conf from ~/.loltest
     const globalConf = parseGlobalConf<RunConfiguration>('.loltest');
     // Read local conf from env vars
-    const envConf = envToConf(process.env, ['LOLTEST_REPORTER', 'LOLTEST_TEST_DIR']);
+    const envConf = envToConf(process.env, [
+        'LOLTEST_REPORTER',
+        'LOLTEST_TEST_DIR',
+    ]);
 
-    const testDir = path.join(process.cwd(), envConf.loltestTestDir ||
-        globalConf.testDir ||
-        DEFAULT_TEST_DIR);
+    const testDir = path.join(
+        process.cwd(),
+        envConf.loltestTestDir || globalConf.testDir || DEFAULT_TEST_DIR
+    );
 
     const conf: Pick<RunConfiguration, 'reporter' | 'testDir'> = {
         reporter: envConf.loltestReporter || globalConf.reporter,

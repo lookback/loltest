@@ -1,8 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import { AssertionError } from 'assert';
-import { scan } from "./lib/scan";
-import { TestCaseReport, ReporterStats, ReporterStart, TestCase } from './reporters';
+import { scan } from './lib/scan';
+import {
+    TestCaseReport,
+    ReporterStats,
+    ReporterStart,
+    TestCase,
+} from './reporters';
 import { flatten } from './lib/flatten';
 import { serializeError } from './lib/serialize-error';
 
@@ -92,7 +97,9 @@ const sendMessage = async (msg: Message): Promise<void> => {
 // Child process test runner
 export const runChild = async (conf: RunConf): Promise<void> => {
     // tslint:disable-next-line:no-let
-    let uncaughtException = false, unhandledRejection = false;
+    let uncaughtException = false;
+    // tslint:disable-next-line:no-let
+    let unhandledRejection = false;
 
     process.on('uncaughtException', (e) => {
         console.log('Uncaught exception:', e);
@@ -105,7 +112,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
 
     const testFilePaths = getTestPaths(conf.target);
 
-    const allTestFiles: TestFile[] = testFilePaths.map<TestFile>(testPath => {
+    const allTestFiles: TestFile[] = testFilePaths.map<TestFile>((testPath) => {
         require(testPath);
 
         return {
@@ -121,7 +128,10 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         : allTestFiles;
 
     const numFiles = testFiles.length;
-    const totalNumTests = testFiles.reduce((acc, testFile) => acc + testFile.tests.length, 0);
+    const totalNumTests = testFiles.reduce(
+        (acc, testFile) => acc + testFile.tests.length,
+        0
+    );
 
     await sendMessage({
         kind: 'run_start',
@@ -138,16 +148,16 @@ export const runChild = async (conf: RunConf): Promise<void> => {
     const results = await Promise.all(allTests);
     const flat = flatten(results);
 
-    const testsAsBooleans: boolean[] = flat.map(t => !t.fail);
-    const allGood = testsAsBooleans.every(p => p);
+    const testsAsBooleans: boolean[] = flat.map((t) => !t.fail);
+    const allGood = testsAsBooleans.every((p) => p);
     const clean = allGood && !uncaughtException && !unhandledRejection;
 
     const finishedMsg: RunCompleteMessage = {
         kind: 'run_complete',
         payload: {
             total: testsAsBooleans.length,
-            passed: testsAsBooleans.filter(p => p).length,
-            failed: testsAsBooleans.filter(p => !p).length,
+            passed: testsAsBooleans.filter((p) => p).length,
+            failed: testsAsBooleans.filter((p) => !p).length,
             duration: Date.now() - startTime,
             numFiles,
         },
@@ -161,15 +171,18 @@ export const runChild = async (conf: RunConf): Promise<void> => {
 /** Apply a text filter on **test case** titles in a list of files. Only test files
  * whose test cases pass the filter will be returned.
  */
-const getFilteredTests = (testFiles: TestFile[], filter: string): TestFile[] => {
+const getFilteredTests = (
+    testFiles: TestFile[],
+    filter: string
+): TestFile[] => {
     const re = new RegExp(filter);
 
     return testFiles
-        .map<TestFile>(t => ({
+        .map<TestFile>((t) => ({
             ...t,
-            tests: t.tests.filter(tt => re.test(tt.name)),
+            tests: t.tests.filter((tt) => re.test(tt.name)),
         }))
-        .filter(t => t.tests.length > 0);
+        .filter((t) => t.tests.length > 0);
 };
 
 const getTestPaths = (target: string): string[] => {
@@ -179,11 +192,10 @@ const getTestPaths = (target: string): string[] => {
         if (stat.isFile()) {
             return [target];
         } else if (stat.isDirectory()) {
-            return scan(target).map(n => path.join(target, n));
+            return scan(target).map((n) => path.join(target, n));
         }
 
         throw new Error('Neither file nor directory');
-
     } catch (err) {
         console.error(`Cannot find directory: ${target}`);
         return process.exit(1);
@@ -192,7 +204,7 @@ const getTestPaths = (target: string): string[] => {
 
 /** foo/bar/baz.txt -> bar/baz.txt */
 const fileNameWithParent = (filePath: string) => {
-    const [file, parent, ] = filePath.split(path.sep).reverse();
+    const [file, parent] = filePath.split(path.sep).reverse();
     return path.join(parent, file);
 };
 
@@ -211,65 +223,81 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
 
     const all = tests.map(
         async ({ name, before, testfn, after }, index): Promise<TestResult> => {
-
-        const testCase = {
-            title: name,
-            fileName: testFileName,
-            index,
-        };
-
-        // run before and save the args
-        const args = await tryRun(testFileName, name, before);
-
-        if (isFail(args)) {
-            console.log(`Error before ${name} in ${testFileName}: ${formatError(args.error)}`);
-
-            return {
-                name,
-                filename: testFileName,
-                fail: true,
-                error: args.error,
-                duration: 0,
+            const testCase = {
+                title: name,
+                fileName: testFileName,
+                index,
             };
-        }
 
-        const testResult = await tryRun<TestResult>(testFileName, name, async () => {
-            sendMessage(<TestStartMessage>{
-                kind: 'test_start',
-                payload: testCase,
+            // run before and save the args
+            const args = await tryRun(testFileName, name, before);
+
+            if (isFail(args)) {
+                console.log(
+                    `Error before ${name} in ${testFileName}: ${formatError(
+                        args.error
+                    )}`
+                );
+
+                return {
+                    name,
+                    filename: testFileName,
+                    fail: true,
+                    error: args.error,
+                    duration: 0,
+                };
+            }
+
+            const testResult = await tryRun<TestResult>(
+                testFileName,
+                name,
+                async () => {
+                    sendMessage(<TestStartMessage>{
+                        kind: 'test_start',
+                        payload: testCase,
+                    });
+
+                    const startedAt = Date.now();
+                    await testfn(args);
+                    const duration = Date.now() - startedAt;
+
+                    return {
+                        name,
+                        filename: testFileName,
+                        fail: false,
+                        duration,
+                    };
+                }
+            );
+
+            sendMessage(<TestResultMessage>{
+                kind: 'test_result',
+                payload: {
+                    testCase,
+                    passed: !testResult.fail,
+                    error: testResult.error
+                        ? serializeError(testResult.error)
+                        : undefined,
+                    duration: testResult.duration,
+                },
             });
 
-            const startedAt = Date.now();
-            await testfn(args);
-            const duration = Date.now() - startedAt;
+            // always run AFTER, regardless of testResult.
+            await tryRun(testFileName, name, () =>
+                after
+                    ? after(args).catch((err: any) => {
+                          console.log(
+                              `Error after ${name} in ${testFileName}: ${formatError(
+                                  err
+                              )}`
+                          );
+                      })
+                    : undefined
+            );
 
-            return {
-                name,
-                filename: testFileName,
-                fail: false,
-                duration,
-            };
-        });
-
-        sendMessage(<TestResultMessage>{
-            kind: 'test_result',
-            payload: {
-                testCase,
-                passed: !testResult.fail,
-                error: testResult.error ? serializeError(testResult.error) : undefined,
-                duration: testResult.duration,
-            },
-        });
-
-        // always run AFTER, regardless of testResult.
-        await tryRun(testFileName, name, () =>
-            after ? after(args).catch((err: any) => {
-                console.log(`Error after ${name} in ${testFileName}: ${formatError(err)}`);
-            }) : undefined
-        );
-
-        return testResult;
-    });
+            return testResult;
+        }
+    );
 
     return Promise.all(all);
 };
@@ -279,15 +307,19 @@ const isFail = (t: any): t is Fail => !!t && !!t.fail;
 const tryRun = <T>(
     testFile: string,
     name: string,
-    fn: (() => Promise<T>) | undefined,
-): Promise<T | TestResult> => Promise.resolve().then(fn)
-    .catch((err): TestResult => ({
-        name,
-        fail: true,
-        filename: testFile,
-        error: err,
-        duration: 0,
-    }));
+    fn: (() => Promise<T>) | undefined
+): Promise<T | TestResult> =>
+    Promise.resolve()
+        .then(fn)
+        .catch(
+            (err): TestResult => ({
+                name,
+                fail: true,
+                filename: testFile,
+                error: err,
+                duration: 0,
+            })
+        );
 
 const formatError = (e: any): string => {
     if (e instanceof Error) {
@@ -302,4 +334,3 @@ const formatError = (e: any): string => {
 
     return e;
 };
-
