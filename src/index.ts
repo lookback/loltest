@@ -8,6 +8,8 @@ import { parseGlobalConf } from './lib/global-conf';
 
 /** The directory in which to search for test files. */
 const DEFAULT_TEST_DIR = 'test';
+/** Directory (under TEST_DIR) where we output files to */
+const DEFAULT_BUILD_DIR = 'build';
 
 const parseArgs = mkParseArgs({}, ['fileFilter', 'testFilter']);
 
@@ -73,12 +75,12 @@ const argv = process.argv;
 // fish out the childrunner start arg
 const runConf = ((): RunConf | null => {
     const n = argv.indexOf('--child-runner');
-    const t = argv.indexOf('--test-filter');
+    const b = argv.indexOf('--build-dir');
 
     return n >= 0
         ? {
               target: argv[n + 1],
-              testFilter: t !== -1 ? argv[t + 1] : undefined,
+              buildDir: argv[b + 1],
           }
         : null;
 })();
@@ -86,7 +88,6 @@ const runConf = ((): RunConf | null => {
 /** Switch depending on whether we're the forked child or not. */
 if (runConf) {
     // run as child
-    require('ts-node').register(); // so we can require .ts-files
     runChild(runConf).catch((e) => {
         console.log('Tests failed', e);
         process.exit(1);
@@ -98,16 +99,30 @@ if (runConf) {
     const envConf = envToConf(process.env, [
         'LOLTEST_REPORTER',
         'LOLTEST_TEST_DIR',
+        'LOLTEST_BUILD_DIR',
     ]);
 
-    const testDir = path.join(
+    const testDir = path.relative(
         process.cwd(),
-        envConf.loltestTestDir || globalConf.testDir || DEFAULT_TEST_DIR
+        path.join(
+            process.cwd(),
+            envConf.loltestTestDir || globalConf.testDir || DEFAULT_TEST_DIR
+        )
     );
 
-    const conf: Pick<RunConfiguration, 'reporter' | 'testDir'> = {
+    const buildDir = path.relative(
+        process.cwd(),
+        path.join(
+            process.cwd(),
+            testDir,
+            envConf.loltestBuildDir || globalConf.buildDir || DEFAULT_BUILD_DIR
+        )
+    );
+
+    const conf: Pick<RunConfiguration, 'reporter' | 'testDir' | 'buildDir'> = {
         reporter: envConf.loltestReporter || globalConf.reporter,
         testDir,
+        buildDir,
     };
 
     const pathToSelf = argv[1]; // 0 is nodejs itself

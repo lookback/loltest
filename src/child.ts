@@ -1,7 +1,5 @@
-import fs from 'fs';
 import path from 'path';
 import { AssertionError } from 'assert';
-import { scan } from './lib/scan';
 import {
     TestCaseReport,
     ReporterStats,
@@ -10,10 +8,11 @@ import {
 } from './reporters';
 import { flatten } from './lib/flatten';
 import { serializeError } from './lib/serialize-error';
+import fs from 'fs';
 
 export interface RunConf {
     target: string;
-    testFilter?: string;
+    buildDir: string;
 }
 
 /**
@@ -110,9 +109,14 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         unhandledRejection = true;
     });
 
-    const testFilePaths = getTestPaths(conf.target);
+    const testFilePaths = [conf.target];
 
-    const allTestFiles: TestFile[] = testFilePaths.map<TestFile>((testPath) => {
+    registerShadowedTs(conf);
+
+    // tslint:disable-next-line: no-object-mutation
+    process.env.NODE_ENV = process.env.NODE_ENV || 'test';
+
+    const testFiles: TestFile[] = testFilePaths.map<TestFile>((testPath) => {
         require(testPath);
 
         return {
@@ -122,10 +126,6 @@ export const runChild = async (conf: RunConf): Promise<void> => {
             tests: foundTests.splice(0, foundTests.length),
         };
     });
-
-    const testFiles = !!conf.testFilter
-        ? getFilteredTests(allTestFiles, conf.testFilter)
-        : allTestFiles;
 
     const numFiles = testFiles.length;
     const totalNumTests = testFiles.reduce(
@@ -168,38 +168,25 @@ export const runChild = async (conf: RunConf): Promise<void> => {
     process.exit(clean ? 0 : 1);
 };
 
-/** Apply a text filter on **test case** titles in a list of files. Only test files
- * whose test cases pass the filter will be returned.
+/**
+ * All ts files are prebuilt by the main process. This registers a handler where
+ * require('test/foo.ts') will be dealt with as require('<buildDir/test/foo.js')
  */
-const getFilteredTests = (
-    testFiles: TestFile[],
-    filter: string
-): TestFile[] => {
-    const re = new RegExp(filter);
-
-    return testFiles
-        .map<TestFile>((t) => ({
-            ...t,
-            tests: t.tests.filter((tt) => re.test(tt.name)),
-        }))
-        .filter((t) => t.tests.length > 0);
-};
-
-const getTestPaths = (target: string): string[] => {
-    try {
-        const stat = fs.statSync(target);
-
-        if (stat.isFile()) {
-            return [target];
-        } else if (stat.isDirectory()) {
-            return scan(target).map((n) => path.join(target, n));
-        }
-
-        throw new Error('Neither file nor directory');
-    } catch (err) {
-        console.error(`Cannot find directory: ${target}`);
-        return process.exit(1);
-    }
+const registerShadowedTs = (conf: RunConf) => {
+    // tslint:disable-next-line: no-object-mutation
+    const jsHandler = require.extensions['.js'];
+    require.extensions['.ts'] = (m: NodeModule, filename: string) => {
+        const _compile = (<any>m)._compile;
+        // tslint:disable-next-line: no-object-mutation
+        (<any>m)._compile = function(code: string, fileName: string): any {
+            const jsName = fileName.replace(/\.ts$/, '.js');
+            const rel = path.relative(process.cwd(), jsName);
+            const prebuilt = path.join(process.cwd(), conf.buildDir, rel);
+            const js = fs.readFileSync(prebuilt, 'utf-8');
+            return _compile.call(this, js, filename);
+        };
+        return jsHandler(m, filename);
+    };
 };
 
 /** foo/bar/baz.txt -> bar/baz.txt */
