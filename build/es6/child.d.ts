@@ -1,7 +1,7 @@
 import { TestCaseReport, ReporterStats, ReporterStart, TestCase } from './reporters';
 export interface RunConf {
     target: string;
-    testFilter?: string;
+    buildDir: string;
 }
 /**
  * A single run of a test case.

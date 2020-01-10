@@ -1,5 +1,6 @@
 export interface RunConfiguration {
     testDir: string;
+    buildDir: string;
     reporter?: string;
     filter?: string;
     testFilter?: string;
