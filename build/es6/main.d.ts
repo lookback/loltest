@@ -1,6 +1,7 @@
 export interface RunConfiguration {
     testDir: string;
     buildDir: string;
+    maxChildCount: number;
     reporter?: string;
     filter?: string;
     testFilter?: string;
