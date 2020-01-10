@@ -33,7 +33,7 @@
     "pretest": "npm run lint",
     "test": "./cli.js",
     "lint": "tslint --project .",
-    "build": "npm run build-cjs & npm run build-es6",
+    "build": "npm run build-cjs && npm run build-es6",
     "build-cjs": "tsc --module commonjs --outDir build/cjs",
     "build-es6": "tsc --module es6 --outDir build/es6"
   },
@@ -41,9 +41,6 @@
     "@types/node": "^12",
     "tslint": "^5.18.0",
     "tslint-immutable": "^6",
-    "typescript": "^3.7.2"
-  },
-  "dependencies": {
-    "ts-node": "^8.3.0"
+    "typescript": "^3.7.4"
   }
 }

@@ -1,4 +1,4 @@
-import { TestCaseReport, ReporterStats, ReporterStart } from './reporters';
+import { TestCaseReport, ReporterStats, ReporterStart, TestCase } from './reporters';
 export interface RunConf {
     target: string;
     testFilter?: string;
@@ -22,21 +22,25 @@ export interface TestResult {
     error?: Error;
     duration: number;
 }
-export declare type Message = TestResultMessage | TestFinishedMessage | TestStartedMessage | TestErrorMessage;
+export declare type Message = TestResultMessage | RunCompleteMessage | RunStartMessage | TestErrorMessage | TestStartMessage;
+export interface TestStartMessage {
+    kind: 'test_start';
+    payload: TestCase;
+}
 export interface TestResultMessage {
     kind: 'test_result';
     payload: TestCaseReport;
 }
-export interface TestFinishedMessage {
-    kind: 'test_finished';
+export interface RunCompleteMessage {
+    kind: 'run_complete';
     payload: ReporterStats;
 }
-export interface TestStartedMessage {
-    kind: 'test_started';
+export interface RunStartMessage {
+    kind: 'run_start';
     payload: ReporterStart;
 }
 export interface TestErrorMessage {
-    kind: 'test_error_message';
+    kind: 'test_error';
     reason: string;
     error?: Error;
 }
