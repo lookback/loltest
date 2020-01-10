@@ -100,6 +100,7 @@ if (runConf) {
         'LOLTEST_REPORTER',
         'LOLTEST_TEST_DIR',
         'LOLTEST_BUILD_DIR',
+        'LOLTEST_MAX_CHILD_COUNT',
     ]);
 
     const testDir = path.relative(
@@ -119,10 +120,16 @@ if (runConf) {
         )
     );
 
-    const conf: Pick<RunConfiguration, 'reporter' | 'testDir' | 'buildDir'> = {
-        reporter: envConf.loltestReporter || globalConf.reporter,
+    const maxChildCount =
+        (envConf.loltestMaxChildCount &&
+            parseInt(envConf.loltestMaxChildCount)) ||
+        require('os').cpus().length;
+
+    const conf: RunConfiguration = {
+        ...globalConf,
         testDir,
         buildDir,
+        maxChildCount,
     };
 
     const pathToSelf = argv[1]; // 0 is nodejs itself

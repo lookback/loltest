@@ -8,7 +8,6 @@ import LolTestReporter from './reporters/loltest-reporter';
 import LolTest2Reporter from './reporters/loltest2-reporter';
 import fs from 'fs';
 import { compileTs } from './compile';
-import os from 'os';
 
 const reporters: { [key: string]: Reporter } = {
     tap: TAPReporter,
@@ -19,6 +18,7 @@ const reporters: { [key: string]: Reporter } = {
 export interface RunConfiguration {
     testDir: string;
     buildDir: string;
+    maxChildCount: number;
     reporter?: string;
     filter?: string;
     testFilter?: string;
@@ -34,7 +34,7 @@ export const runMain = (self: string, config: RunConfiguration) => {
     // compile ts to be reused by each child.
     compileTs(testFiles, config);
 
-    const maxChildCount = os.cpus().length;
+    const maxChildCount = config.maxChildCount;
     const todo = testFiles
         .map((t) => t.replace(/\.(ts|js)$/, '.ts'))
         .map((t) => path.join(process.cwd(), t));
