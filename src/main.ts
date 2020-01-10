@@ -71,7 +71,10 @@ const handleChildMessage = (reporter: Reporter, message: Message) => {
 export const findTarget = (testDir: string, filter?: string): string => {
     if (filter) {
         const jsFiles = scan(testDir);
-        const file = jsFiles.find(f => f.startsWith(filter));
+        const possible = jsFiles
+            .filter(f => f.startsWith(filter));
+        possible.sort((f1, f2) => f1.length - f2.length);
+        const file = possible[0]; // shortest wins
         if (file) {
             return path.join(testDir, file);
         } else {
