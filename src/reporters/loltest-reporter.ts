@@ -61,36 +61,38 @@ Ran 29 tests in 3.01s
 ```
  */
 const LolTestReporter: Reporter = {
-    onRunStart: ({ total, numFiles }) =>
-        `Found ${total} ${pluralize('test', total)} in ${numFiles} ${pluralize(
-            'file',
-            numFiles
-        )}...`,
+    onRunStart: ({ total, numFiles }, out) =>
+        out(
+            `Found ${total} ${pluralize(
+                'test',
+                total
+            )} in ${numFiles} ${pluralize('file', numFiles)}...`
+        ),
 
-    onTestStart: () => {
-        return undefined;
-    },
+    onTestStart: (_, out) => out(),
 
-    onTestResult: ({ testCase, passed, error, duration }) => {
-        return passed
-            ? logSuccess(testCase.title, testCase.fileName, duration)
-            : logFail(testCase.title, testCase.fileName, duration, error);
-    },
+    onTestResult: ({ testCase, passed, error, duration }, out) =>
+        out(
+            passed
+                ? logSuccess(testCase.title, testCase.fileName, duration)
+                : logFail(testCase.title, testCase.fileName, duration, error)
+        ),
 
     // "Ran X tests. Y passed, Z failed"
-    onRunComplete: ({ total, passed, failed, duration }) => {
-        return [
-            `\n\nRan ${total} ${pluralize('test', total)} in ${formatTime(
-                duration
-            )}`,
-            `${passed ? green(passed + ' passed') : passed + ' passed'}, ${
-                failed ? red(failed + ' failed') : failed + ' failed'
-            }`,
-        ].join('\n');
-    },
+    onRunComplete: ({ total, passed, failed, duration }, out) =>
+        out(
+            [
+                `\n\nRan ${total} ${pluralize('test', total)} in ${formatTime(
+                    duration
+                )}`,
+                `${passed ? green(passed + ' passed') : passed + ' passed'}, ${
+                    failed ? red(failed + ' failed') : failed + ' failed'
+                }`,
+            ].join('\n')
+        ),
 
-    onError: (reason, error) =>
-        `⚠ ${yellow(reason)}` + (error ? `\n\n${formatError(error)}` : ''),
+    onError: (reason, error, out) =>
+        out(`⚠ ${yellow(reason)}` + (error ? `\n\n${formatError(error)}` : '')),
 };
 
 export default LolTestReporter;

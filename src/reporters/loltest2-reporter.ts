@@ -76,22 +76,24 @@ const LolTest2Reporter: LolTest2Reporter = {
 
     passedFiles: new Set(),
 
-    onRunStart: ({ total, numFiles }) =>
-        `${colorize(
-            Effect.Underline,
-            `Running ${total} ${pluralize(
-                'test',
-                total
-            )} in ${numFiles} ${pluralize('file', numFiles)}...\n`
-        )}`,
+    onRunStart: ({ total, numFiles }, out) =>
+        out(
+            `${colorize(
+                Effect.Underline,
+                `Running ${total} ${pluralize(
+                    'test',
+                    total
+                )} in ${numFiles} ${pluralize('file', numFiles)}...\n`
+            )}`
+        ),
 
-    onTestStart: (testCase) => undefined,
+    onTestStart: (testCase, out) => out(),
     // `${colorize(
     //     { back: BgColor.Yellow, front: FgColor.Black },
     //     " START "
     // )} ${testCase.fileName} ${dim("›")} ${testCase.title}`,
 
-    onTestResult(report): string {
+    onTestResult(report, out): void {
         const { testCase, passed, error, duration } = report;
 
         if (!passed) {
@@ -107,13 +109,15 @@ const LolTest2Reporter: LolTest2Reporter = {
             this.passedFiles.add(testCase.fileName);
         }
 
-        return passed
-            ? logSuccess(testCase.title, testCase.fileName, duration)
-            : logFail(testCase.title, testCase.fileName, duration, error);
+        out(
+            passed
+                ? logSuccess(testCase.title, testCase.fileName, duration)
+                : logFail(testCase.title, testCase.fileName, duration, error)
+        );
     },
 
     // "Ran X tests. Y passed, Z failed"
-    onRunComplete({ total, passed, failed, duration, numFiles }): string {
+    onRunComplete({ total, passed, failed, duration, numFiles }, out): void {
         const fails = this.fails
             .map(({ testCase, error, duration }, idx) =>
                 [
@@ -131,50 +135,52 @@ const LolTest2Reporter: LolTest2Reporter = {
             )
             .join('\n\n');
 
-        return [
-            fails.trim().length
-                ? colorize(
-                      Effect.Underline,
-                      '\n\nSummary of all failed tests\n\n'
-                  )
-                : green('\n\n✔︎ All is fine!'),
+        out(
+            [
+                fails.trim().length
+                    ? colorize(
+                          Effect.Underline,
+                          '\n\nSummary of all failed tests\n\n'
+                      )
+                    : green('\n\n✔︎ All is fine!'),
 
-            fails.trim().length ? fails : undefined,
+                fails.trim().length ? fails : undefined,
 
-            '\n',
+                '\n',
 
-            `${colorize(Effect.Bold, 'Files')}:\t\t${[
-                this.failedFiles.size
-                    ? red(`${this.failedFiles.size} failed`)
-                    : undefined,
-                this.passedFiles.size
-                    ? green(`${this.passedFiles.size} passed`)
-                    : `${this.passedFiles.size} passed`,
+                `${colorize(Effect.Bold, 'Files')}:\t\t${[
+                    this.failedFiles.size
+                        ? red(`${this.failedFiles.size} failed`)
+                        : undefined,
+                    this.passedFiles.size
+                        ? green(`${this.passedFiles.size} passed`)
+                        : `${this.passedFiles.size} passed`,
+                ]
+                    .filter(Boolean)
+                    .join(', ')}, ${numFiles} total`,
+
+                `${colorize(Effect.Bold, 'Tests')}:\t\t${[
+                    failed ? red(`${failed} failed`) : undefined,
+                    passed ? green(`${passed} passed`) : `${passed} passed`,
+                ]
+                    .filter(Boolean)
+                    .join(', ')}, ${total} total`,
+
+                `${colorize(Effect.Bold, 'Duration')}:\t${formatTime(
+                    duration
+                )} (${formatTime(Number((duration / total).toFixed(1)))} avg)`,
             ]
                 .filter(Boolean)
-                .join(', ')}, ${numFiles} total`,
-
-            `${colorize(Effect.Bold, 'Tests')}:\t\t${[
-                failed ? red(`${failed} failed`) : undefined,
-                passed ? green(`${passed} passed`) : `${passed} passed`,
-            ]
-                .filter(Boolean)
-                .join(', ')}, ${total} total`,
-
-            `${colorize(Effect.Bold, 'Duration')}:\t${formatTime(
-                duration
-            )} (${formatTime(Number((duration / total).toFixed(1)))} avg)`,
-        ]
-            .filter(Boolean)
-            .join('\n');
+                .join('\n')
+        );
     },
 
-    onError(reason, error): string {
+    onError(reason, error, out): void {
         this.fails.push({
             error: error || new Error('Unknown error'),
         });
 
-        return `${badge(BgColor.Yellow, 'ERR')} ${reason}`;
+        out(`${badge(BgColor.Yellow, 'ERR')} ${reason}`);
     },
 };
 
