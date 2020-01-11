@@ -1,8 +1,8 @@
-import { Reporter } from ".";
-import { SerializedError } from "../lib/serialize-error";
-import { green, red, dim, yellow } from "../lib/colorize";
-import { pluralize } from "../lib/pluralize";
-import { formatTime } from "../lib/format-time";
+import { Reporter } from '.';
+import { SerializedError } from '../lib/serialize-error';
+import { green, red, dim, yellow } from '../lib/colorize';
+import { pluralize } from '../lib/pluralize';
+import { formatTime } from '../lib/format-time';
 
 const formatError = (err: Error | SerializedError): string => {
     if (err.stack) {
@@ -18,12 +18,23 @@ const formatError = (err: Error | SerializedError): string => {
 const SHOW_TIME_THRESHOLD_MS = 20;
 
 const logSuccess = (title: string, fileName: string, duration: number) =>
-    `${green("✔︎")} ${fileName} ${dim('›')} ${title}${
-        duration > SHOW_TIME_THRESHOLD_MS ? dim(` (${formatTime(duration)})`) : ''}`;
+    `${green('✔︎')} ${fileName} ${dim('›')} ${title}${
+        duration > SHOW_TIME_THRESHOLD_MS
+            ? dim(` (${formatTime(duration)})`)
+            : ''
+    }`;
 
-const logFail = (title: string, fileName: string, duration: number, error?: Error) =>
-    `${red("✗")} ${red(fileName)} ${dim('›')} ${title}${
-        duration > SHOW_TIME_THRESHOLD_MS ? dim(` (${formatTime(duration)})`) : ''}
+const logFail = (
+    title: string,
+    fileName: string,
+    duration: number,
+    error?: Error
+) =>
+    `${red('✗')} ${red(fileName)} ${dim('›')} ${title}${
+        duration > SHOW_TIME_THRESHOLD_MS
+            ? dim(` (${formatTime(duration)})`)
+            : ''
+    }
 ${error && formatError(error)}\n`;
 
 /**
@@ -51,32 +62,35 @@ Ran 29 tests in 3.01s
  */
 const LolTestReporter: Reporter = {
     onRunStart: ({ total, numFiles }) =>
-        `Found ${total} ${pluralize('test', total)} in ${numFiles} ${
-            pluralize('file', numFiles)}...`,
+        `Found ${total} ${pluralize('test', total)} in ${numFiles} ${pluralize(
+            'file',
+            numFiles
+        )}...`,
 
     onTestStart: () => {
         return undefined;
     },
 
-    onTestResult: ({testCase, passed, error, duration }) => {
-        return (passed
+    onTestResult: ({ testCase, passed, error, duration }) => {
+        return passed
             ? logSuccess(testCase.title, testCase.fileName, duration)
-            : logFail(testCase.title, testCase.fileName, duration, error));
+            : logFail(testCase.title, testCase.fileName, duration, error);
     },
 
     // "Ran X tests. Y passed, Z failed"
     onRunComplete: ({ total, passed, failed, duration }) => {
         return [
-            `\n\nRan ${total} ${pluralize('test', total)} in ${formatTime(duration)}`,
+            `\n\nRan ${total} ${pluralize('test', total)} in ${formatTime(
+                duration
+            )}`,
             `${passed ? green(passed + ' passed') : passed + ' passed'}, ${
-                failed ? red(failed + ' failed') : failed + ' failed'}`,
+                failed ? red(failed + ' failed') : failed + ' failed'
+            }`,
         ].join('\n');
     },
 
     onError: (reason, error) =>
-        `⚠ ${yellow(reason)}` + (error
-            ? `\n\n${formatError(error)}`
-            : ''),
+        `⚠ ${yellow(reason)}` + (error ? `\n\n${formatError(error)}` : ''),
 };
 
 export default LolTestReporter;

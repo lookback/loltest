@@ -11,7 +11,7 @@ export const parseGlobalConf = <T>(confFileName: string): Partial<T> => {
     }
 
     try {
-        return JSON.parse(fs.readFileSync(confPath, {encoding: 'utf8'}));
+        return JSON.parse(fs.readFileSync(confPath, { encoding: 'utf8' }));
     } catch (ex) {
         console.error(`Failed to parse global config: ${confPath}`, ex);
         process.exit(1);

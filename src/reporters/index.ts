@@ -1,4 +1,4 @@
-import { SerializedError } from "../lib/serialize-error";
+import { SerializedError } from '../lib/serialize-error';
 
 export interface TestCase {
     /** The name of the test case */

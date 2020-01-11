@@ -7,8 +7,8 @@ export const envToConf = (
     envKeys: string[]
 ): { [k: string]: string | undefined } => {
     const parsed = envKeys
-        .filter(k => !!env[k])
-        .map(k => ({ [toCamelCase(k)]: env[k] }));
+        .filter((k) => !!env[k])
+        .map((k) => ({ [toCamelCase(k)]: env[k] }));
 
     return parsed.length ? Object.assign.call(null, ...parsed) : {};
 };
