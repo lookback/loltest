@@ -76,7 +76,7 @@ const LolTestReporter: Reporter = {
             `Found ${total} ${pluralize(
                 'test',
                 total
-            )} in ${numFiles} ${pluralize('file', numFiles)}...`
+            )} in ${numFiles} ${pluralize('file', numFiles)}…`
         ),
 
     onTestStart: (_, out) => out(),

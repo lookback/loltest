@@ -93,7 +93,7 @@ const LolTest2Reporter: LolTest2Reporter = {
                 `Running ${total} ${pluralize(
                     'test',
                     total
-                )} in ${numFiles} ${pluralize('file', numFiles)}...\n`
+                )} in ${numFiles} ${pluralize('file', numFiles)}…\n`
             )}`
         ),
 
