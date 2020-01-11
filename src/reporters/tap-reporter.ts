@@ -63,6 +63,9 @@ const outputDirectives = ({ duration }: { duration: number }) =>
     `${duration !== 0 ? ' # time=' + duration + 'ms' : ''}`;
 
 const TAPReporter: Reporter = {
+    onCompileStart: (out) => out(),
+    onCompileEnd: (_, out) => out(),
+
     onRunStart: ({ numFiles, total }, out) =>
         out(`TAP version 13\n1..${total}`),
 

@@ -61,6 +61,16 @@ Ran 29 tests in 3.01s
 ```
  */
 const LolTestReporter: Reporter = {
+    onCompileStart: (out) => out('Compiling…'),
+
+    onCompileEnd: ({ numFiles, duration }, out) =>
+        out(
+            `Compiled ${numFiles} ${pluralize(
+                'file',
+                numFiles
+            )} in ${formatTime(duration)}`
+        ),
+
     onRunStart: ({ total, numFiles }, out) =>
         out(
             `Found ${total} ${pluralize(

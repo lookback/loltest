@@ -40,6 +40,18 @@ export interface ReporterStats {
 export type Output = (msg?: string) => void;
 
 export interface Reporter {
+    /** Call when compilation starts. */
+    onCompileStart: (out: Output) => void;
+
+    /** Call when compilation ends. */
+    onCompileEnd: (
+        stats: {
+            numFiles: number;
+            duration: number;
+        },
+        out: Output
+    ) => void;
+
     /** Call before test run starts. */
     onRunStart: (opts: ReporterStart, out: Output) => void;
 

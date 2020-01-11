@@ -133,7 +133,8 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         0
     );
 
-    await sendMessage({
+    // deliberately don't await this.
+    sendMessage({
         kind: 'run_start',
         payload: {
             numFiles,
@@ -163,6 +164,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         },
     };
 
+    // do await this, since we want to know it's sent.
     await sendMessage(finishedMsg);
 
     process.exit(clean ? 0 : 1);
@@ -220,7 +222,7 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
             const args = await tryRun(testFileName, name, before);
 
             if (isFail(args)) {
-                console.log(
+                console.error(
                     `Error before ${name} in ${testFileName}: ${formatError(
                         args.error
                     )}`

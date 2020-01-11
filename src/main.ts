@@ -2,7 +2,7 @@ import child_process from 'child_process';
 import path from 'path';
 import { scan } from './lib/scan';
 import { Message } from './child';
-import { Reporter } from './reporters';
+import { Reporter, Output } from './reporters';
 import TAPReporter from './reporters/tap-reporter';
 import LolTestReporter from './reporters/loltest-reporter';
 import LolTest2Reporter from './reporters/loltest2-reporter';
@@ -30,9 +30,10 @@ export const runMain = (self: string, config: RunConfiguration) => {
     const testFiles = getTestFiles(target);
 
     const reporter = reporters[config.reporter || 'loltest'];
+    const output: Output = (msg) => typeof msg === 'string' && console.log(msg);
 
     // compile ts to be reused by each child.
-    compileTs(testFiles, config);
+    compileTs(testFiles, config, reporter, output);
 
     const maxChildCount = config.maxChildCount;
     const todo = testFiles
@@ -58,7 +59,9 @@ export const runMain = (self: string, config: RunConfiguration) => {
             stdio: [process.stdin, process.stdout, process.stderr, 'ipc'],
         });
 
-        child.on('message', (m: Message) => handleChildMessage(reporter, m));
+        child.on('message', (m: Message) =>
+            handleChildMessage(reporter, m, output)
+        );
 
         child.on('exit', (childExit) => {
             // die on first child exiting with non-null.
@@ -78,22 +81,26 @@ export const runMain = (self: string, config: RunConfiguration) => {
     while (runNext()) {}
 };
 
-const handleChildMessage = (reporter: Reporter, message: Message) => {
+const handleChildMessage = (
+    reporter: Reporter,
+    message: Message,
+    out: Output
+) => {
     switch (message.kind) {
         case 'run_start':
-            reporter.onRunStart(message.payload, console.log);
+            reporter.onRunStart(message.payload, out);
             return;
         case 'test_start':
-            reporter.onTestStart(message.payload, console.log);
+            reporter.onTestStart(message.payload, out);
             return;
         case 'test_result':
-            reporter.onTestResult(message.payload, console.log);
+            reporter.onTestResult(message.payload, out);
             return;
         case 'run_complete':
-            reporter.onRunComplete(message.payload, console.log);
+            reporter.onRunComplete(message.payload, out);
             return;
         case 'test_error':
-            reporter.onError(message.reason, message.error, console.log);
+            reporter.onError(message.reason, message.error, out);
             return;
     }
     ((x: never) => {})(message); // assert exhaustive

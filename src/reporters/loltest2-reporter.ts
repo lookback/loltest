@@ -76,6 +76,16 @@ const LolTest2Reporter: LolTest2Reporter = {
 
     passedFiles: new Set(),
 
+    onCompileStart: (out) => out('Compiling…'),
+
+    onCompileEnd: ({ numFiles, duration }, out) =>
+        out(
+            `Compiled ${numFiles} ${pluralize(
+                'file',
+                numFiles
+            )} in ${formatTime(duration)}`
+        ),
+
     onRunStart: ({ total, numFiles }, out) =>
         out(
             `${colorize(

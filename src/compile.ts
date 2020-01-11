@@ -2,8 +2,14 @@ import ts from 'typescript';
 import { RunConfiguration } from './main';
 import { red } from './lib/colorize';
 import fs from 'fs';
+import { Reporter, Output } from './reporters';
 
-export const compileTs = (testFiles: string[], config: RunConfiguration) => {
+export const compileTs = (
+    testFiles: string[],
+    config: RunConfiguration,
+    reporter: Reporter,
+    out: Output
+) => {
     const tsconfigPath = ts.findConfigFile(
         /*searchPath*/ './',
         ts.sys.fileExists,
@@ -43,9 +49,17 @@ export const compileTs = (testFiles: string[], config: RunConfiguration) => {
 
     const fileNames = [...parsedTsConf.fileNames, ...testFiles];
 
+    let numFiles = 0; // tslint:disable-line
+
     // tslint:disable-next-line: no-object-mutation
-    host.writeFile = (fileName, content) => ts.sys.writeFile(fileName, content);
+    host.writeFile = (fileName, content) => {
+        numFiles++;
+        return ts.sys.writeFile(fileName, content);
+    };
     const program = ts.createProgram(fileNames, compOpts, host);
+
+    reporter.onCompileStart(out);
+    const startTime = Date.now();
     const emitResult = program.emit();
 
     emitResult.diagnostics.forEach((diagnostic) => {
@@ -82,4 +96,12 @@ export const compileTs = (testFiles: string[], config: RunConfiguration) => {
     if (emitResult.emitSkipped) {
         process.exit(1);
     }
+
+    reporter.onCompileEnd(
+        {
+            numFiles,
+            duration: Date.now() - startTime,
+        },
+        out
+    );
 };
