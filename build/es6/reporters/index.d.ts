@@ -1,4 +1,4 @@
-import { SerializedError } from "../lib/serialize-error";
+import { SerializedError } from '../lib/serialize-error';
 export interface TestCase {
     /** The name of the test case */
     title: string;
@@ -32,16 +32,23 @@ export interface ReporterStats {
     /** Total number of test files found. */
     numFiles: number;
 }
-export declare type ReporterOutput = string | undefined;
+export declare type Output = (msg?: string) => void;
 export interface Reporter {
+    /** Call when compilation starts. */
+    onCompileStart: (out: Output) => void;
+    /** Call when compilation ends. */
+    onCompileEnd: (stats: {
+        numFiles: number;
+        duration: number;
+    }, out: Output) => void;
     /** Call before test run starts. */
-    onRunStart: (opts: ReporterStart) => ReporterOutput;
+    onRunStart: (opts: ReporterStart, out: Output) => void;
     /** Call before test case starts. */
-    onTestStart: (testCase: TestCase) => ReporterOutput;
+    onTestStart: (testCase: TestCase, out: Output) => void;
     /** Call for a finished test case. */
-    onTestResult: (opts: TestCaseReport) => ReporterOutput;
+    onTestResult: (opts: TestCaseReport, out: Output) => void;
     /** Call after test run ends. */
-    onRunComplete: (stats: ReporterStats) => ReporterOutput;
+    onRunComplete: (stats: ReporterStats, out: Output) => void;
     /** Call when an error occurred in *setting up the test*, not within the test itself. */
-    onError: (reason: string, error?: Error) => ReporterOutput;
+    onError: (reason: string, error: Error | undefined, out: Output) => void;
 }

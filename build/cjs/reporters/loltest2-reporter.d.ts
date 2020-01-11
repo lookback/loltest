@@ -1,5 +1,5 @@
-import { Reporter, TestCase } from ".";
-import { SerializedError } from "../lib/serialize-error";
+import { Reporter, TestCase } from '.';
+import { SerializedError } from '../lib/serialize-error';
 interface LolTest2Reporter extends Reporter {
     fails: {
         testCase?: TestCase;

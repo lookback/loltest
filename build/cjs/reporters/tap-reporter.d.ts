@@ -1,3 +1,3 @@
-import { Reporter } from ".";
+import { Reporter } from '.';
 declare const TAPReporter: Reporter;
 export default TAPReporter;
