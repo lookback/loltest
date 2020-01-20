@@ -125,8 +125,11 @@ if (runConf) {
             parseInt(envConf.loltestMaxChildCount)) ||
         require('os').cpus().length;
 
+    const reporter = envConf.loltestReporter || globalConf.reporter || 'loltest';
+
     const conf: RunConfiguration = {
         ...globalConf,
+        reporter,
         testDir,
         buildDir,
         maxChildCount,
