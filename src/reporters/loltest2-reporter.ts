@@ -1,3 +1,4 @@
+// tslint:disable no-object-mutation
 import { Reporter, TestCase } from '.';
 import { pluralize } from '../lib/pluralize';
 import { formatTime } from '../lib/format-time';
@@ -60,9 +61,16 @@ const logFail = (
 interface LolTest2Reporter extends Reporter {
     fails: {
         testCase?: TestCase;
-        error: Error | SerializedError;
+        error: Error | SerializedError | string;
         duration?: number;
     }[];
+
+    numPassedTests: number;
+    numFailedTests: number;
+    numTotalTests: number;
+    numFiles: number;
+
+    startTime: number | null; // in ms
 
     failedFiles: Set<string>;
 
@@ -76,6 +84,13 @@ const LolTest2Reporter: LolTest2Reporter = {
 
     passedFiles: new Set(),
 
+    numFailedTests: 0,
+    numPassedTests: 0,
+    numTotalTests: 0,
+    numFiles: 0,
+
+    startTime: null,
+
     onCompileStart: (out) => out('Compiling…'),
 
     onCompileEnd: ({ numFiles, duration }, out) =>
@@ -86,27 +101,32 @@ const LolTest2Reporter: LolTest2Reporter = {
             )} in ${formatTime(duration)}`
         ),
 
-    onRunStart: ({ total, numFiles }, out) =>
+    onRunStart({ numFiles }, out): void {
+        this.startTime = Date.now();
+        this.numFiles = numFiles;
+
         out(
             `${colorize(
                 Effect.Underline,
-                `Running ${total} ${pluralize(
-                    'test',
-                    total
-                )} in ${numFiles} ${pluralize('file', numFiles)}…\n`
+                `Found ${numFiles} ${pluralize('test file', numFiles)}…\n`
             )}`
-        ),
+        );
+    },
 
-    onTestStart: (testCase, out) => out(),
-    // `${colorize(
-    //     { back: BgColor.Yellow, front: FgColor.Black },
-    //     " START "
-    // )} ${testCase.fileName} ${dim("›")} ${testCase.title}`,
+    onTestStart(): void {
+        this.numTotalTests++;
+    },
 
     onTestResult(report, out): void {
         const { testCase, passed, error, duration } = report;
 
+        if (passed) {
+            this.numPassedTests++;
+        }
+
         if (!passed) {
+            this.numFailedTests++;
+
             this.fails.push({
                 testCase,
                 error: error || new Error('Unknown fail'),
@@ -127,7 +147,9 @@ const LolTest2Reporter: LolTest2Reporter = {
     },
 
     // "Ran X tests. Y passed, Z failed"
-    onRunComplete({ total, passed, failed, duration, numFiles }, out): void {
+    onRunComplete(out): void {
+        const duration = this.startTime && Date.now() - this.startTime;
+
         const fails = this.fails
             .map(({ testCase, error, duration }, idx) =>
                 [
@@ -138,7 +160,9 @@ const LolTest2Reporter: LolTest2Reporter = {
                               duration ? ` (${formatTime(duration)})` : ''
                           }\n`
                         : undefined,
-                    INDENT + formatError(error, 1),
+                    INDENT + (typeof error === 'string'
+                        ? error
+                        : formatError(error, 1)),
                 ]
                     .filter(Boolean)
                     .join('\n')
@@ -167,30 +191,30 @@ const LolTest2Reporter: LolTest2Reporter = {
                         : `${this.passedFiles.size} passed`,
                 ]
                     .filter(Boolean)
-                    .join(', ')}, ${numFiles} total`,
+                    .join(', ')}, ${this.numFiles} total`,
 
                 `${colorize(Effect.Bold, 'Tests')}:\t\t${[
-                    failed ? red(`${failed} failed`) : undefined,
-                    passed ? green(`${passed} passed`) : `${passed} passed`,
+                    this.numFailedTests ? red(`${this.numFailedTests} failed`) : undefined,
+                    this.numPassedTests ? green(`${this.numPassedTests} passed`) : `${this.numPassedTests} passed`,
                 ]
                     .filter(Boolean)
-                    .join(', ')}, ${total} total`,
+                    .join(', ')}, ${this.numTotalTests} total`,
 
-                `${colorize(Effect.Bold, 'Duration')}:\t${formatTime(
+                `${colorize(Effect.Bold, 'Duration')}:\t${duration ? formatTime(
                     duration
-                )} (${formatTime(Number((duration / total).toFixed(1)))} avg)`,
+                ) : '-'}${duration ? ` (${formatTime(Number((duration / this.numTotalTests).toFixed(1)))} avg)` : ''}`,
             ]
                 .filter(Boolean)
                 .join('\n')
         );
     },
 
-    onError(reason, error, out): void {
+    onError(error, out): void {
         this.fails.push({
-            error: error || new Error('Unknown error'),
+            error,
         });
 
-        out(`${badge(BgColor.Yellow, 'ERR')} ${reason}`);
+        out(`${badge(BgColor.Yellow, 'ERR')} ${error}`);
     },
 };
 

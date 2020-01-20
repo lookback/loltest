@@ -2,7 +2,6 @@ import path from 'path';
 import { AssertionError } from 'assert';
 import {
     TestCaseReport,
-    ReporterStats,
     ReporterStart,
     TestCase,
 } from './reporters';
@@ -68,7 +67,6 @@ export interface TestResultMessage {
 
 export interface RunCompleteMessage {
     kind: 'run_complete';
-    payload: ReporterStats;
 }
 
 export interface RunStartMessage {
@@ -78,8 +76,9 @@ export interface RunStartMessage {
 
 export interface TestErrorMessage {
     kind: 'test_error';
-    reason: string;
-    error?: Error;
+    // We can't use Error constructor here, as it can't be serialised
+    // between processes.
+    error: string;
 }
 
 // test() puts tests into here. This is *per file*.
@@ -127,23 +126,6 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         };
     });
 
-    const numFiles = testFiles.length;
-    const totalNumTests = testFiles.reduce(
-        (acc, testFile) => acc + testFile.tests.length,
-        0
-    );
-
-    // deliberately don't await this.
-    sendMessage({
-        kind: 'run_start',
-        payload: {
-            numFiles,
-            total: totalNumTests,
-        },
-    });
-
-    const startTime = Date.now();
-
     const allTests = testFiles.map(doTest);
 
     const results = await Promise.all(allTests);
@@ -152,20 +134,6 @@ export const runChild = async (conf: RunConf): Promise<void> => {
     const testsAsBooleans: boolean[] = flat.map((t) => !t.fail);
     const allGood = testsAsBooleans.every((p) => p);
     const clean = allGood && !uncaughtException && !unhandledRejection;
-
-    const finishedMsg: RunCompleteMessage = {
-        kind: 'run_complete',
-        payload: {
-            total: testsAsBooleans.length,
-            passed: testsAsBooleans.filter((p) => p).length,
-            failed: testsAsBooleans.filter((p) => !p).length,
-            duration: Date.now() - startTime,
-            numFiles,
-        },
-    };
-
-    // do await this, since we want to know it's sent.
-    await sendMessage(finishedMsg);
 
     process.exit(clean ? 0 : 1);
 };
@@ -204,7 +172,7 @@ const doTest = (testFile: TestFile): Promise<TestResult[]> => {
     if (!tests.length) {
         sendMessage({
             kind: 'test_error',
-            reason: `${testFileName}: No tests found`,
+            error: `${testFileName}: No tests found.`,
         });
 
         return Promise.resolve([]);

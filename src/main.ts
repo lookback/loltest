@@ -19,7 +19,7 @@ export interface RunConfiguration {
     testDir: string;
     buildDir: string;
     maxChildCount: number;
-    reporter?: string;
+    reporter: string;
     filter?: string;
     testFilter?: string;
 }
@@ -29,8 +29,31 @@ export const runMain = (self: string, config: RunConfiguration) => {
     const target = findTarget(config.testDir, config.filter);
     const testFiles = getTestFiles(target);
 
-    const reporter = reporters[config.reporter || 'loltest'];
+    const reporter = reporters[config.reporter] || LolTestReporter;
     const output: Output = (msg) => typeof msg === 'string' && console.log(msg);
+
+    const handleReporterMsg = (
+        message: Message,
+    ) => {
+        switch (message.kind) {
+            case 'run_start':
+                reporter.onRunStart(message.payload, output);
+                return;
+            case 'test_start':
+                reporter.onTestStart(message.payload, output);
+                return;
+            case 'test_result':
+                reporter.onTestResult(message.payload, output);
+                return;
+            case 'run_complete':
+                reporter.onRunComplete(output);
+                return;
+            case 'test_error':
+                reporter.onError(message.error, output);
+                return;
+        }
+        ((x: never) => {})(message); // assert exhaustive
+    };
 
     // compile ts to be reused by each child.
     compileTs(testFiles, config, reporter, output);
@@ -42,8 +65,21 @@ export const runMain = (self: string, config: RunConfiguration) => {
     // tslint:disable-next-line:no-let
     let running = 0;
 
+    handleReporterMsg({
+        kind: 'run_start',
+        payload: {
+            numFiles: testFiles.length,
+        },
+    });
+
     const runNext = (): boolean => {
         if (running >= maxChildCount || !todo.length) {
+            if (running === 0 && todo.length === 0) {
+                handleReporterMsg({
+                    kind: 'run_complete',
+                });
+            }
+
             return false;
         }
 
@@ -60,7 +96,7 @@ export const runMain = (self: string, config: RunConfiguration) => {
         });
 
         child.on('message', (m: Message) =>
-            handleChildMessage(reporter, m, output)
+            handleReporterMsg(m)
         );
 
         child.on('exit', (childExit) => {
@@ -79,31 +115,6 @@ export const runMain = (self: string, config: RunConfiguration) => {
 
     // start as many as we're allowed
     while (runNext()) {}
-};
-
-const handleChildMessage = (
-    reporter: Reporter,
-    message: Message,
-    out: Output
-) => {
-    switch (message.kind) {
-        case 'run_start':
-            reporter.onRunStart(message.payload, out);
-            return;
-        case 'test_start':
-            reporter.onTestStart(message.payload, out);
-            return;
-        case 'test_result':
-            reporter.onTestResult(message.payload, out);
-            return;
-        case 'run_complete':
-            reporter.onRunComplete(message.payload, out);
-            return;
-        case 'test_error':
-            reporter.onError(message.reason, message.error, out);
-            return;
-    }
-    ((x: never) => {})(message); // assert exhaustive
 };
 
 /** Find a target to start child process from. */

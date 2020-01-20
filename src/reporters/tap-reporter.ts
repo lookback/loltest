@@ -1,3 +1,4 @@
+// tslint:disable no-object-mutation
 import { basename } from 'path';
 import { Reporter } from '.';
 import { SerializedError } from '../lib/serialize-error';
@@ -53,38 +54,57 @@ ${toYAML(obj, 3)}
 `;
 
 const logSuccess = (title: string, index: number) =>
-    `ok ${index + 1} - ${title}`;
+    `ok ${index} - ${title}`;
 
 const logFailure = (title: string, index: number, error?: SerializedError) =>
-    `not ok ${index + 1} - ${title}` +
+    `not ok ${index} - ${title}` +
     (error ? outputDiagnostics(formatError(error)) : '');
 
 const outputDirectives = ({ duration }: { duration: number }) =>
     `${duration !== 0 ? ' # time=' + duration + 'ms' : ''}`;
 
-const TAPReporter: Reporter = {
+interface TAPReporter extends Reporter {
+    currentIndex: number;
+    totalNumTests: number;
+}
+
+const TAPReporter: TAPReporter = {
+
+    currentIndex: 0,
+
+    totalNumTests: 0,
+
     onCompileStart: (out) => out(),
     onCompileEnd: (_, out) => out(),
 
-    onRunStart: ({ numFiles, total }, out) =>
-        out(`TAP version 13\n1..${total}`),
+    onRunStart(_, out): void {
+        out(`TAP version 13`);
+    },
 
-    onTestStart: (_, out) => out(),
+    onTestStart(_, __): void {
+        this.totalNumTests++;
+    },
 
-    onTestResult: ({ testCase, passed, error, duration }, out) =>
+    onTestResult({ testCase, passed, error, duration }, out): void {
+        this.currentIndex++;
+
         out(
             '\n' +
                 (passed
-                    ? logSuccess(testCase.title, testCase.index)
-                    : logFailure(testCase.title, testCase.index, error)) +
+                    ? logSuccess(testCase.title, this.currentIndex)
+                    : logFailure(testCase.title, this.currentIndex, error)) +
                 outputDirectives({ duration })
-        ),
+        );
+    },
 
-    onRunComplete: (_, out) => out(''),
+    // http://testanything.org/tap-version-13-specification.html#the-plan
+    onRunComplete(out): void {
+        out(`1..${this.totalNumTests}`);
+    },
 
-    onError: (reason, error, out) =>
+    onError: (error, out) =>
         // This is lol: http://testanything.org/tap-version-13-specification.html#bail-out
-        out(`Bail out! ${reason}`),
+        out(`Bail out! ${error}`),
 };
 
 export default TAPReporter;

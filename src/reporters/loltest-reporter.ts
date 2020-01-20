@@ -1,3 +1,4 @@
+// tslint:disable no-object-mutation
 import { Reporter } from '.';
 import { SerializedError } from '../lib/serialize-error';
 import { green, red, dim, yellow } from '../lib/colorize';
@@ -37,6 +38,15 @@ const logFail = (
     }
 ${error && formatError(error)}\n`;
 
+interface LolTestReporter extends Reporter {
+    numPassedTests: number;
+    numFailedTests: number;
+    numTotalTests: number;
+    numFiles: number;
+
+    startTime: number | null; // in ms
+}
+
 /**
  * A plain reporter.
  *
@@ -60,7 +70,15 @@ Ran 29 tests in 3.01s
 28 passed, 1 failed
 ```
  */
-const LolTestReporter: Reporter = {
+const LolTestReporter: LolTestReporter = {
+
+    numFailedTests: 0,
+    numPassedTests: 0,
+    numTotalTests: 0,
+    numFiles: 0,
+
+    startTime: null,
+
     onCompileStart: (out) => out('Compiling…'),
 
     onCompileEnd: ({ numFiles, duration }, out) =>
@@ -71,38 +89,51 @@ const LolTestReporter: Reporter = {
             )} in ${formatTime(duration)}`
         ),
 
-    onRunStart: ({ total, numFiles }, out) =>
+    onRunStart({ numFiles }, out): void {
+        this.startTime = Date.now();
+        this.numFiles = numFiles;
+
         out(
-            `Found ${total} ${pluralize(
-                'test',
-                total
-            )} in ${numFiles} ${pluralize('file', numFiles)}…`
-        ),
+            `Found ${numFiles} ${pluralize('test file', numFiles)}…`
+        );
+    },
 
-    onTestStart: (_, out) => out(),
+    onTestStart(): void {
+        this.numTotalTests++;
+    },
 
-    onTestResult: ({ testCase, passed, error, duration }, out) =>
+    onTestResult({ testCase, passed, error, duration }, out): void {
+        if (passed) {
+            this.numPassedTests++;
+        } else {
+            this.numFailedTests++;
+        }
+
         out(
             passed
                 ? logSuccess(testCase.title, testCase.fileName, duration)
                 : logFail(testCase.title, testCase.fileName, duration, error)
-        ),
+        );
+    },
 
     // "Ran X tests. Y passed, Z failed"
-    onRunComplete: ({ total, passed, failed, duration }, out) =>
+    onRunComplete(out): void {
+        const duration = this.startTime && Date.now() - this.startTime;
+
         out(
             [
-                `\n\nRan ${total} ${pluralize('test', total)} in ${formatTime(
+                `\n\nRan ${this.numTotalTests} ${pluralize('test', this.numTotalTests)}${duration ? ` in ${formatTime(
                     duration
-                )}`,
-                `${passed ? green(passed + ' passed') : passed + ' passed'}, ${
-                    failed ? red(failed + ' failed') : failed + ' failed'
+                )}` : ''}`,
+                `${this.numPassedTests ? green(this.numPassedTests + ' passed') : this.numPassedTests + ' passed'}, ${
+                    this.numFailedTests ? red(this.numFailedTests + ' failed') : this.numFailedTests + ' failed'
                 }`,
             ].join('\n')
-        ),
+        );
+    },
 
-    onError: (reason, error, out) =>
-        out(`⚠ ${yellow(reason)}` + (error ? `\n\n${formatError(error)}` : '')),
+    onError: (error, out) =>
+        out(`⚠ ${yellow(error)}`),
 };
 
 export default LolTestReporter;
