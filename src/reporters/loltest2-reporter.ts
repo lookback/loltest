@@ -202,7 +202,9 @@ const LolTest2Reporter: LolTest2Reporter = {
 
                 `${colorize(Effect.Bold, 'Duration')}:\t${duration ? formatTime(
                     duration
-                ) : '-'}${duration ? ` (${formatTime(Number((duration / this.numTotalTests).toFixed(1)))} avg)` : ''}`,
+                ) : '-'}${duration ? ` (${this.numTotalTests > 0
+                    ? formatTime(Number((duration / this.numTotalTests).toFixed(1)))
+                    : '-'} avg)` : ''}`,
             ]
                 .filter(Boolean)
                 .join('\n')
