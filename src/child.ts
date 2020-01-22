@@ -12,6 +12,7 @@ import fs from 'fs';
 export interface RunConf {
     target: string;
     buildDir: string;
+    testNameFilter?: string;
 }
 
 /**
@@ -126,7 +127,9 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         };
     });
 
-    const allTests = testFiles.map(doTest);
+    const allTests = testFiles.map(f =>
+        doTest(f, conf.testNameFilter)
+    );
 
     const results = await Promise.all(allTests);
     const flat = flatten(results);
@@ -165,14 +168,20 @@ const fileNameWithParent = (filePath: string) => {
     return path.join(parent, file);
 };
 
-const doTest = (testFile: TestFile): Promise<TestResult[]> => {
+/** Returns tests where their name matches the regex. */
+const applyTestNameFilter = (tests: TestRun[], regex: RegExp) =>
+    tests.filter(t => regex.test(t.name));
+
+const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
     const testFileName = fileNameWithParent(testFile.filePath);
-    const tests = testFile.tests;
+    const tests = filter
+        ? applyTestNameFilter(testFile.tests, new RegExp(filter))
+        : testFile.tests;
 
     if (!tests.length) {
         sendMessage({
             kind: 'test_error',
-            error: `${testFileName}: No tests found.`,
+            error: `${testFileName}: No tests found. Filter: ${filter || 'none'}`,
         });
 
         return Promise.resolve([]);

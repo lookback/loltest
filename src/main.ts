@@ -20,7 +20,9 @@ export interface RunConfiguration {
     buildDir: string;
     maxChildCount: number;
     reporter: string;
+    /** Filter for which test files to run. */
     filter?: string;
+    /** Filter for test names to run. Can be regex. */
     testFilter?: string;
 }
 
@@ -86,7 +88,11 @@ export const runMain = (self: string, config: RunConfiguration) => {
         running++;
 
         const next = todo.shift()!;
-        const params = ['--child-runner', next, '--build-dir', config.buildDir];
+        const params = [
+            '--child-runner', next,
+            '--build-dir', config.buildDir,
+            ...(config.testFilter ? ['--test-filter', config.testFilter] : []),
+        ];
 
         const child = child_process.fork(self, params, {
             // See https://nodejs.org/api/child_process.html#child_process_options_stdio
