@@ -76,11 +76,13 @@ const argv = process.argv;
 const runConf = ((): RunConf | null => {
     const n = argv.indexOf('--child-runner');
     const b = argv.indexOf('--build-dir');
+    const f = argv.indexOf('--test-filter'); // Optional
 
     return n >= 0
         ? {
               target: argv[n + 1],
               buildDir: argv[b + 1],
+              testNameFilter: f !== -1 ? argv[f + 1] : undefined,
           }
         : null;
 })();
