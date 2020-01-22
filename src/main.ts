@@ -108,6 +108,10 @@ export const runMain = (self: string, config: RunConfiguration) => {
         child.on('exit', (childExit) => {
             // die on first child exiting with non-null.
             if (childExit && childExit !== 0) {
+                handleReporterMsg({
+                    kind: 'run_complete',
+                });
+
                 process.exit(childExit);
             }
 
