@@ -20,7 +20,7 @@ const pad = (str: string, len: number): string =>
     str
         .trim()
         .padEnd(len)
-        .padStart(len + str.length / 2);
+        .padStart(len * 2 - str.length);
 
 const formatError = (err: Error | SerializedError, indent = 0): string => {
     if (err.stack) {
@@ -35,7 +35,7 @@ const formatError = (err: Error | SerializedError, indent = 0): string => {
 };
 
 const badge = (color: BgColor, text: string) =>
-    colorize({ back: color, front: FgColor.Black }, pad(text, 6));
+    colorize({ back: color, front: FgColor.Black }, pad(text, 5));
 
 /** Don't print durations (in milliseconds) below this threshold. */
 const SHOW_TIME_THRESHOLD_MS = 20;
