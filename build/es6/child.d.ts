@@ -1,4 +1,5 @@
 import { TestCaseReport, ReporterStart, TestCase } from './reporters';
+import { TestMeta } from '.';
 export interface RunConf {
     target: string;
     buildDir: string;
@@ -9,9 +10,9 @@ export interface RunConf {
  */
 export interface TestRun {
     name: string;
-    before?: () => any;
-    testfn: (a?: any) => any;
-    after?: (a?: any) => any;
+    before?: (meta: TestMeta) => any;
+    testfn: (a?: any & TestMeta) => any;
+    after?: (a?: any & TestMeta) => any;
 }
 /**
  * The result of a TestRun.
