@@ -8,7 +8,6 @@ export interface TestCase {
     fileName: string;
 }
 export interface ReporterStart {
-    total: number;
     numFiles: number;
 }
 export interface TestCaseReport {
@@ -19,18 +18,6 @@ export interface TestCaseReport {
     error?: Error | SerializedError;
     /** Duration to run this test, in milliseconds */
     duration: number;
-}
-export interface ReporterStats {
-    /** Total number of tests */
-    total: number;
-    /** Total passed tests */
-    passed: number;
-    /** Total failed tests */
-    failed: number;
-    /** Duration in milliseconds */
-    duration: number;
-    /** Total number of test files found. */
-    numFiles: number;
 }
 export declare type Output = (msg?: string) => void;
 export interface Reporter {
@@ -48,7 +35,7 @@ export interface Reporter {
     /** Call for a finished test case. */
     onTestResult: (opts: TestCaseReport, out: Output) => void;
     /** Call after test run ends. */
-    onRunComplete: (stats: ReporterStats, out: Output) => void;
+    onRunComplete: (out: Output) => void;
     /** Call when an error occurred in *setting up the test*, not within the test itself. */
-    onError: (reason: string, error: Error | undefined, out: Output) => void;
+    onError: (error: string, out: Output) => void;
 }

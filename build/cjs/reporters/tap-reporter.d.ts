@@ -1,3 +1,7 @@
 import { Reporter } from '.';
-declare const TAPReporter: Reporter;
+interface TAPReporter extends Reporter {
+    currentIndex: number;
+    totalNumTests: number;
+}
+declare const TAPReporter: TAPReporter;
 export default TAPReporter;

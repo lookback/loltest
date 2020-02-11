@@ -1,7 +1,8 @@
-import { TestCaseReport, ReporterStats, ReporterStart, TestCase } from './reporters';
+import { TestCaseReport, ReporterStart, TestCase } from './reporters';
 export interface RunConf {
     target: string;
     buildDir: string;
+    testNameFilter?: string;
 }
 /**
  * A single run of a test case.
@@ -33,7 +34,6 @@ export interface TestResultMessage {
 }
 export interface RunCompleteMessage {
     kind: 'run_complete';
-    payload: ReporterStats;
 }
 export interface RunStartMessage {
     kind: 'run_start';
@@ -41,8 +41,7 @@ export interface RunStartMessage {
 }
 export interface TestErrorMessage {
     kind: 'test_error';
-    reason: string;
-    error?: Error;
+    error: string;
 }
 export declare const foundTests: TestRun[];
 export declare const runChild: (conf: RunConf) => Promise<void>;

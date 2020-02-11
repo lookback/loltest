@@ -1,4 +1,11 @@
 import { Reporter } from '.';
+interface LolTestReporter extends Reporter {
+    numPassedTests: number;
+    numFailedTests: number;
+    numTotalTests: number;
+    numFiles: number;
+    startTime: number | null;
+}
 /**
  * A plain reporter.
  *
@@ -22,5 +29,5 @@ Ran 29 tests in 3.01s
 28 passed, 1 failed
 ```
  */
-declare const LolTestReporter: Reporter;
+declare const LolTestReporter: LolTestReporter;
 export default LolTestReporter;
