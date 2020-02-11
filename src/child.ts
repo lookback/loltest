@@ -197,6 +197,7 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
             };
 
             const testMeta: TestMeta = {
+                testFileName,
                 testCaseName: name,
             };
 

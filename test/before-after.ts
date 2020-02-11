@@ -5,6 +5,7 @@ test(
     'Before gets testMeta',
     async (meta: TestMeta) => {
         assert.deepEqual(meta, {
+            testFileName: 'test/before-after.ts',
             testCaseName: 'Before gets testMeta',
         });
     },
