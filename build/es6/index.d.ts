@@ -14,6 +14,6 @@ export declare type Test = {
 };
 export interface TestMeta {
     /** Name of the test being run. */
-    testCaseName: String;
+    testCaseName: string;
 }
 export declare const test: Test;
