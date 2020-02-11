@@ -13,6 +13,8 @@ export declare type Test = {
     }): void;
 };
 export interface TestMeta {
+    /** File that the test was found in. */
+    testFileName: string;
     /** Name of the test being run. */
     testCaseName: string;
 }
