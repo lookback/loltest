@@ -22,21 +22,26 @@ export type Test = {
      * Optionally provide an `after` function. */
     <S>(
         name: string,
-        before: () => S | Promise<S>,
-        testfn: (s: S) => any | Promise<any>,
-        after?: (s: S) => any | Promise<any>
+        before: (meta: TestMeta) => S | Promise<S>,
+        testfn: (s: S & TestMeta) => any | Promise<any>,
+        after?: (s: S & TestMeta) => any | Promise<any>
     ): void;
 
     /** Declare a test case with a name. */
     <S>(
         name: string,
         def: {
-            before?: () => S | Promise<S>;
-            testfn: (s: S) => any | Promise<any>;
-            after?: (s: S) => any | Promise<any>;
+            before?: (meta: TestMeta) => S | Promise<S>;
+            testfn: (s: S & TestMeta) => any | Promise<any>;
+            after?: (s: S & TestMeta) => any | Promise<any>;
         }
     ): void;
 };
+
+export interface TestMeta {
+    /** Name of the test being run. */
+    testCaseName: String;
+}
 
 const createTest = (name: string, obj: any): TestRun => {
     if (foundTests.find((t) => t.name === name)) {

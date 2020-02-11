@@ -8,6 +8,7 @@ import {
 import { flatten } from './lib/flatten';
 import { serializeError } from './lib/serialize-error';
 import fs from 'fs';
+import { TestMeta } from '.';
 
 export interface RunConf {
     target: string;
@@ -20,9 +21,9 @@ export interface RunConf {
  */
 export interface TestRun {
     name: string;
-    before?: () => any;
-    testfn: (a?: any) => any;
-    after?: (a?: any) => any;
+    before?: (meta: TestMeta) => any;
+    testfn: (a?: any & TestMeta) => any;
+    after?: (a?: any& TestMeta) => any;
 }
 
 /**
@@ -195,8 +196,15 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
                 index,
             };
 
+            const testMeta: TestMeta = {
+                testCaseName: name,
+            };
+
             // run before and save the args
-            const args = await tryRun(testFileName, name, before);
+            const args = await tryRun(testFileName, name, () => before && before(testMeta)) || {}; 
+
+            // tslint:disable-next-line: no-object-mutation
+            Object.assign(args, testMeta);
 
             if (isFail(args)) {
                 console.error(
@@ -250,15 +258,14 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
 
             // always run AFTER, regardless of testResult.
             await tryRun(testFileName, name, () =>
-                after
-                    ? after(args).catch((err: any) => {
+                after && after(args)
+                .catch((err: any) => {
                           console.log(
                               `Error after ${name} in ${testFileName}: ${formatError(
                                   err
                               )}`
                           );
                       })
-                    : undefined
             );
 
             return testResult;
