@@ -40,7 +40,7 @@ export type Test = {
 
 export interface TestMeta {
     /** Name of the test being run. */
-    testCaseName: String;
+    testCaseName: string;
 }
 
 const createTest = (name: string, obj: any): TestRun => {
