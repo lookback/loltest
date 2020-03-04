@@ -90,7 +90,13 @@ export const runMain = (self: string, config: RunConfiguration) => {
             return false;
         }
 
+        if (todo.length == 0) {
+            return false;
+        }
+
         running++;
+
+        console.log(todo);
 
         const next = todo.shift()!;
         const params = [
