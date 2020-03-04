@@ -188,11 +188,11 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
         return Promise.resolve([]);
     }
 
-    console.log('here', tests.length);
+    console.log('start', testFile.filePath);
 
     const all = tests.map(
         async ({ name, before, testfn, after }, index): Promise<TestResult> => {
-            console.log('inside', tests.length);
+            console.log('inside 1', testFile.filePath);
 
             const testCase = {
                 title: name,
@@ -208,6 +208,8 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
             // run before and save the args
             const args = await tryRun(testFileName, name, () => before && before(testMeta)) || {}; 
 
+            console.log('inside 2', testFile.filePath);
+            
             // tslint:disable-next-line: no-object-mutation
             Object.assign(args, testMeta);
 
@@ -218,6 +220,8 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
                     )}`
                 );
 
+                console.log('inside 3', testFile.filePath);
+            
                 return {
                     name,
                     filename: testFileName,
@@ -227,6 +231,8 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
                 };
             }
 
+            console.log('inside 4', testFile.filePath);
+            
             const testResult = await tryRun<TestResult>(
                 testFileName,
                 name,
@@ -249,6 +255,8 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
                 }
             );
 
+            console.log('inside 5', testFile.filePath);
+            
             sendMessage(<TestResultMessage>{
                 kind: 'test_result',
                 payload: {
@@ -260,6 +268,8 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
                     duration: testResult.duration,
                 },
             });
+
+            console.log('inside 6', testFile.filePath);
 
             // always run AFTER, regardless of testResult.
             await tryRun(testFileName, name, () =>
@@ -273,6 +283,8 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
                       })
             );
 
+            console.log('inside 7', testFile.filePath);
+
             return testResult;
         }
     );
@@ -280,11 +292,10 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
     return Promise.all(all).catch(e => {
         console.error("Unhandled error in child runner", e);
         throw e;
-    })
-    .then(v => {
-        console.info("Finished with value", v);
+    }).then(v => {
+        console.log('return', testFile.filePath);
         return v;
-     });
+    });
 };
 
 const isFail = (t: any): t is Fail => !!t && !!t.fail;
