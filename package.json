@@ -1,6 +1,6 @@
 {
   "name": "loltest",
-  "version": "1.4.14",
+  "version": "1.4.15",
   "description": "Minimal test runner for node. Tailored for Typescript",
   "keywords": [
     "node",
