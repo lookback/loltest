@@ -10,6 +10,10 @@ export interface TestCase {
 export interface ReporterStart {
     numFiles: number;
 }
+export interface Init {
+    testFiles: number;
+    maxChildCount: number;
+}
 export interface TestCaseReport {
     testCase: TestCase;
     /** Indicates whether the test passed or not */
@@ -28,6 +32,8 @@ export interface Reporter {
         numFiles: number;
         duration: number;
     }, out: Output) => void;
+    /** Called before entire test suite runs. */
+    onInit: (opts: Init, out: Output) => void;
     /** Call before test run starts. */
     onRunStart: (opts: ReporterStart, out: Output) => void;
     /** Call before test case starts. */

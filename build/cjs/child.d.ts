@@ -1,4 +1,4 @@
-import { TestCaseReport, ReporterStart, TestCase } from './reporters';
+import { TestCaseReport, ReporterStart, TestCase, Init } from './reporters';
 import { TestMeta } from '.';
 export interface RunConf {
     target: string;
@@ -24,7 +24,7 @@ export interface TestResult {
     error?: Error;
     duration: number;
 }
-export declare type Message = TestResultMessage | RunCompleteMessage | RunStartMessage | TestErrorMessage | TestStartMessage;
+export declare type Message = TestResultMessage | RunCompleteMessage | RunStartMessage | TestErrorMessage | TestStartMessage | InitMessage;
 export interface TestStartMessage {
     kind: 'test_start';
     payload: TestCase;
@@ -39,6 +39,10 @@ export interface RunCompleteMessage {
 export interface RunStartMessage {
     kind: 'run_start';
     payload: ReporterStart;
+}
+export interface InitMessage {
+    kind: 'init';
+    payload: Init;
 }
 export interface TestErrorMessage {
     kind: 'test_error';
