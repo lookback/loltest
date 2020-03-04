@@ -179,8 +179,6 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
         ? applyTestNameFilter(testFile.tests, new RegExp(filter))
         : testFile.tests;
 
-    console.log('tests to run', tests);
-
     if (!tests.length) {
         sendMessage({
             kind: 'test_error',
@@ -275,7 +273,14 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
         }
     );
 
-    return Promise.all(all);
+    return Promise.all(all).catch(e => {
+        console.error("Unhandled error in child runner", e);
+        throw e;
+    })
+    .then(v => {
+        console.info("Finished with value", v);
+        return v;
+     });
 };
 
 const isFail = (t: any): t is Fail => !!t && !!t.fail;
