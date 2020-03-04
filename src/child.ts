@@ -139,6 +139,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
     const allGood = testsAsBooleans.every((p) => p);
     const clean = allGood && !uncaughtException && !unhandledRejection;
 
+    console.log('process.exit', clean, testFiles[0].filePath);
     process.exit(clean ? 0 : 1);
 };
 
