@@ -38,6 +38,9 @@ export const runMain = (self: string, config: RunConfiguration) => {
         message: Message,
     ) => {
         switch (message.kind) {
+            case 'init':
+                reporter.onInit(message.payload, output);
+                return;
             case 'run_start':
                 reporter.onRunStart(message.payload, output);
                 return;

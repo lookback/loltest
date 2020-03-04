@@ -89,6 +89,14 @@ const LolTestReporter: LolTestReporter = {
             )} in ${formatTime(duration)}`
         ),
 
+    onInit: ({testFiles, maxChildCount}, out) => {
+        out(`Found ${testFiles} test ${pluralize(
+            'file',
+            testFiles
+        )}`);
+        out(`Max child count: ${maxChildCount}`);
+    },
+
     onRunStart({ numFiles }, out): void {
         this.startTime = Date.now();
         this.numFiles = numFiles;

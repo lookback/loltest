@@ -4,6 +4,7 @@ import {
     TestCaseReport,
     ReporterStart,
     TestCase,
+    Init,
 } from './reporters';
 import { flatten } from './lib/flatten';
 import { serializeError } from './lib/serialize-error';
@@ -55,7 +56,8 @@ export type Message =
     | RunCompleteMessage
     | RunStartMessage
     | TestErrorMessage
-    | TestStartMessage;
+    | TestStartMessage
+    | InitMessage;
 
 export interface TestStartMessage {
     kind: 'test_start';
@@ -74,6 +76,11 @@ export interface RunCompleteMessage {
 export interface RunStartMessage {
     kind: 'run_start';
     payload: ReporterStart;
+}
+
+export interface InitMessage {
+    kind: 'init';
+    payload: Init;
 }
 
 export interface TestErrorMessage {

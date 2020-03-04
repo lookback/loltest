@@ -77,6 +77,8 @@ const TAPReporter: TAPReporter = {
     onCompileStart: (out) => out(),
     onCompileEnd: (_, out) => out(),
 
+    onInit(): void {},
+
     onRunStart(_, out): void {
         out(`TAP version 13`);
     },
