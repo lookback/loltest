@@ -9,6 +9,7 @@ import { flatten } from './lib/flatten';
 import { serializeError } from './lib/serialize-error';
 import fs from 'fs';
 import { TestMeta } from '.';
+import { inspect } from 'util';
 
 export interface RunConf {
     target: string;
@@ -127,6 +128,8 @@ export const runChild = async (conf: RunConf): Promise<void> => {
             tests: foundTests.splice(0, foundTests.length),
         };
     });
+
+    console.log('child run testFiles', inspect(testFiles, false, 1000));
 
     const allTests = testFiles.map(f =>
         doTest(f, conf.testNameFilter)
