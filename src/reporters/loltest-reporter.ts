@@ -71,7 +71,6 @@ Ran 29 tests in 3.01s
 ```
  */
 const LolTestReporter: LolTestReporter = {
-
     numFailedTests: 0,
     numPassedTests: 0,
     numTotalTests: 0,
@@ -89,13 +88,12 @@ const LolTestReporter: LolTestReporter = {
             )} in ${formatTime(duration)}`
         ),
 
-    onRunStart({ numFiles }, out): void {
+    onRunStart({ numFiles, maxChildCount }, out): void {
         this.startTime = Date.now();
         this.numFiles = numFiles;
 
-        out(
-            `Found ${numFiles} ${pluralize('test file', numFiles)}…`
-        );
+        out(`Using ${maxChildCount} children`);
+        out(`Found ${numFiles} ${pluralize('test file', numFiles)}…`);
     },
 
     onTestStart(): void {

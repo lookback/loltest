@@ -71,6 +71,7 @@ export const runMain = (self: string, config: RunConfiguration) => {
         kind: 'run_start',
         payload: {
             numFiles: testFiles.length,
+            maxChildCount,
         },
     });
 

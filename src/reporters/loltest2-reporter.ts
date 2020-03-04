@@ -101,10 +101,11 @@ const LolTest2Reporter: LolTest2Reporter = {
             )} in ${formatTime(duration)}`
         ),
 
-    onRunStart({ numFiles }, out): void {
+    onRunStart({ numFiles, maxChildCount }, out): void {
         this.startTime = Date.now();
         this.numFiles = numFiles;
 
+        out(`Using ${maxChildCount} children`);
         out(
             `${colorize(
                 Effect.Underline,

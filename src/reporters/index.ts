@@ -11,6 +11,7 @@ export interface TestCase {
 
 export interface ReporterStart {
     numFiles: number;
+    maxChildCount: number;
 }
 
 export interface TestCaseReport {
