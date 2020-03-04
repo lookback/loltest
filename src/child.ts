@@ -192,6 +192,8 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
 
     const all = tests.map(
         async ({ name, before, testfn, after }, index): Promise<TestResult> => {
+            console.log('inside', tests.length);
+
             const testCase = {
                 title: name,
                 fileName: testFileName,
@@ -247,7 +249,6 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
                 }
             );
 
-            console.log('send message', testCase);
             sendMessage(<TestResultMessage>{
                 kind: 'test_result',
                 payload: {
@@ -275,8 +276,6 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
             return testResult;
         }
     );
-
-    console.log('here 2', tests.length);
 
     return Promise.all(all).catch(e => {
         console.error("Unhandled error in child runner", e);

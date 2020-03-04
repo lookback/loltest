@@ -124,6 +124,8 @@ export const runMain = (self: string, config: RunConfiguration) => {
                 process.exit(childExit);
             }
 
+            console.log('finished', next);
+
             files_done++;
             running--;
 
