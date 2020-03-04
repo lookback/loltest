@@ -161,9 +161,10 @@ const LolTest2Reporter: LolTest2Reporter = {
                               duration ? ` (${formatTime(duration)})` : ''
                           }\n`
                         : undefined,
-                    INDENT + (typeof error === 'string'
-                        ? error
-                        : formatError(error, 1)),
+                    INDENT +
+                        (typeof error === 'string'
+                            ? error
+                            : formatError(error, 1)),
                 ]
                     .filter(Boolean)
                     .join('\n')
@@ -195,17 +196,33 @@ const LolTest2Reporter: LolTest2Reporter = {
                     .join(', ')}, ${this.numFiles} total`,
 
                 `${colorize(Effect.Bold, 'Tests')}:\t\t${[
-                    this.numFailedTests ? red(`${this.numFailedTests} failed`) : undefined,
-                    this.numPassedTests ? green(`${this.numPassedTests} passed`) : `${this.numPassedTests} passed`,
+                    this.numFailedTests
+                        ? red(`${this.numFailedTests} failed`)
+                        : undefined,
+                    this.numPassedTests
+                        ? green(`${this.numPassedTests} passed`)
+                        : `${this.numPassedTests} passed`,
                 ]
                     .filter(Boolean)
                     .join(', ')}, ${this.numTotalTests} total`,
 
-                `${colorize(Effect.Bold, 'Duration')}:\t${duration ? formatTime(
+                `${colorize(Effect.Bold, 'Duration')}:\t${
+                    duration ? formatTime(duration) : '-'
+                }${
                     duration
-                ) : '-'}${duration ? ` (${this.numTotalTests > 0
-                    ? formatTime(Number((duration / this.numTotalTests).toFixed(1)))
-                    : '-'} avg)` : ''}`,
+                        ? ` (${
+                              this.numTotalTests > 0
+                                  ? formatTime(
+                                        Number(
+                                            (
+                                                duration / this.numTotalTests
+                                            ).toFixed(1)
+                                        )
+                                    )
+                                  : '-'
+                          } avg)`
+                        : ''
+                }`,
             ]
                 .filter(Boolean)
                 .join('\n')

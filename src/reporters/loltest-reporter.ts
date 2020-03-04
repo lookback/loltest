@@ -120,18 +120,24 @@ const LolTestReporter: LolTestReporter = {
 
         out(
             [
-                `\n\nRan ${this.numTotalTests} ${pluralize('test', this.numTotalTests)}${duration ? ` in ${formatTime(
-                    duration
-                )}` : ''}`,
-                `${this.numPassedTests ? green(this.numPassedTests + ' passed') : this.numPassedTests + ' passed'}, ${
-                    this.numFailedTests ? red(this.numFailedTests + ' failed') : this.numFailedTests + ' failed'
+                `\n\nRan ${this.numTotalTests} ${pluralize(
+                    'test',
+                    this.numTotalTests
+                )}${duration ? ` in ${formatTime(duration)}` : ''}`,
+                `${
+                    this.numPassedTests
+                        ? green(this.numPassedTests + ' passed')
+                        : this.numPassedTests + ' passed'
+                }, ${
+                    this.numFailedTests
+                        ? red(this.numFailedTests + ' failed')
+                        : this.numFailedTests + ' failed'
                 }`,
             ].join('\n')
         );
     },
 
-    onError: (error, out) =>
-        out(`⚠ ${yellow(error)}`),
+    onError: (error, out) => out(`⚠ ${yellow(error)}`),
 };
 
 export default LolTestReporter;
