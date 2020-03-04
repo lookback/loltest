@@ -96,8 +96,6 @@ export const runMain = (self: string, config: RunConfiguration) => {
 
         running++;
 
-        console.log(todo);
-
         const next = todo.shift()!;
         const params = [
             '--child-runner', next,
@@ -116,7 +114,10 @@ export const runMain = (self: string, config: RunConfiguration) => {
             handleReporterMsg(m)
         );
 
-        child.on('exit', (childExit) => {
+        child.on('exit', (childExit, signal) => {
+
+            console.log('finished', childExit, '"', signal, '"', next);
+
             // die on first child exiting with non-null.
             if (childExit && childExit !== 0) {
                 handleReporterMsg({
