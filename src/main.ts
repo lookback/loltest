@@ -96,8 +96,6 @@ export const runMain = (self: string, config: RunConfiguration) => {
 
         running++;
 
-        console.log(todo);
-
         const next = todo.shift()!;
         const params = [
             '--child-runner', next,
