@@ -115,6 +115,9 @@ export const runMain = (self: string, config: RunConfiguration) => {
         );
 
         child.on('exit', (childExit, signal) => {
+
+            console.log('finished', childExit, '"', signal, '"', next);
+
             // die on first child exiting with non-null.
             if (childExit && childExit !== 0) {
                 handleReporterMsg({
@@ -123,8 +126,6 @@ export const runMain = (self: string, config: RunConfiguration) => {
 
                 process.exit(childExit);
             }
-
-            console.log('finished', signal, next);
 
             files_done++;
             running--;
