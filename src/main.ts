@@ -75,14 +75,18 @@ export const runMain = (self: string, config: RunConfiguration) => {
         },
     });
 
-    const runNext = (): boolean => {
-        if (running >= maxChildCount || !todo.length) {
-            if (running === 0 && todo.length === 0) {
-                handleReporterMsg({
-                    kind: 'run_complete',
-                });
-            }
+    // tslint:disable-next-line: no-let
+    let files_done = 0;
 
+    const runNext = (): boolean => {
+        if (running === 0 && files_done === testFiles.length) {
+            handleReporterMsg({
+                kind: 'run_complete',
+            });
+            return false;
+        }
+
+        if (running >= maxChildCount) {
             return false;
         }
 
@@ -116,6 +120,7 @@ export const runMain = (self: string, config: RunConfiguration) => {
                 process.exit(childExit);
             }
 
+            files_done++;
             running--;
 
             runNext();
