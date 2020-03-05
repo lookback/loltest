@@ -34,9 +34,7 @@ export const runMain = (self: string, config: RunConfiguration) => {
     const reporter = reporters[config.reporter] || LolTestReporter;
     const output: Output = (msg) => typeof msg === 'string' && console.log(msg);
 
-    const handleReporterMsg = (
-        message: Message,
-    ) => {
+    const handleReporterMsg = (message: Message) => {
         switch (message.kind) {
             case 'run_start':
                 reporter.onRunStart(message.payload, output);
@@ -98,8 +96,10 @@ export const runMain = (self: string, config: RunConfiguration) => {
 
         const next = todo.shift()!;
         const params = [
-            '--child-runner', next,
-            '--build-dir', config.buildDir,
+            '--child-runner',
+            next,
+            '--build-dir',
+            config.buildDir,
             ...(config.testFilter ? ['--test-filter', config.testFilter] : []),
         ];
 
@@ -110,14 +110,9 @@ export const runMain = (self: string, config: RunConfiguration) => {
             stdio: [process.stdin, process.stdout, process.stderr, 'ipc'],
         });
 
-        child.on('message', (m: Message) =>
-            handleReporterMsg(m)
-        );
+        child.on('message', (m: Message) => handleReporterMsg(m));
 
         child.on('exit', (childExit, signal) => {
-
-            console.log('finished', childExit, '"', signal, '"', next);
-
             // die on first child exiting with non-null.
             if (childExit && childExit !== 0) {
                 handleReporterMsg({
