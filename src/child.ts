@@ -112,7 +112,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
 
     const testFilePaths = [conf.target];
 
-    registerShadowedTs(conf);
+    registerShadowedTs(conf.buildDir);
 
     // tslint:disable-next-line: no-object-mutation
     process.env.NODE_ENV = process.env.NODE_ENV || 'test';
@@ -144,7 +144,7 @@ export const runChild = async (conf: RunConf): Promise<void> => {
  * All ts files are prebuilt by the main process. This registers a handler where
  * require('test/foo.ts') will be dealt with as require('<buildDir/test/foo.js')
  */
-const registerShadowedTs = (conf: RunConf) => {
+export const registerShadowedTs = (buildDir: string) => {
     // tslint:disable-next-line: no-object-mutation
     const jsHandler = require.extensions['.js'];
     require.extensions['.ts'] = (m: NodeModule, filename: string) => {
@@ -153,7 +153,7 @@ const registerShadowedTs = (conf: RunConf) => {
         (<any>m)._compile = function(code: string, fileName: string): any {
             const jsName = fileName.replace(/\.ts$/, '.js');
             const rel = path.relative(process.cwd(), jsName);
-            const prebuilt = path.join(process.cwd(), conf.buildDir, rel);
+            const prebuilt = path.join(process.cwd(), buildDir, rel);
             const js = fs.readFileSync(prebuilt, 'utf-8');
             return _compile.call(this, js, filename);
         };

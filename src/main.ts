@@ -1,7 +1,7 @@
 import child_process from 'child_process';
 import path from 'path';
-import { scan } from './lib/scan';
-import { Message } from './child';
+import { scan, scanPrefork } from './lib/scan';
+import { Message, registerShadowedTs } from './child';
 import { Reporter, Output } from './reporters';
 import TAPReporter from './reporters/tap-reporter';
 import LolTestReporter from './reporters/loltest-reporter';
@@ -29,6 +29,7 @@ export interface RunConfiguration {
 /** The main process which forks child processes for each test. */
 export const runMain = (self: string, config: RunConfiguration) => {
     const target = findTarget(config.testDir, config.filter);
+    const preforkFiles = findPrefork(config.testDir);
     const testFiles = getTestFiles(target);
 
     const reporter = reporters[config.reporter] || LolTestReporter;
@@ -56,7 +57,17 @@ export const runMain = (self: string, config: RunConfiguration) => {
     };
 
     // compile ts to be reused by each child.
-    compileTs(testFiles, config, reporter, output);
+    compileTs([...preforkFiles, ...testFiles], config, reporter, output);
+
+    // files that are to be run before forking to child processes
+    const preforks = preforkFiles
+        .map((t) => t.replace(/\.(ts|js)$/, '.ts'))
+        .map((t) => path.join(process.cwd(), t));
+
+    registerShadowedTs(config.buildDir);
+
+    // run them
+    preforks.forEach((f) => require(f));
 
     const maxChildCount = config.maxChildCount;
     const todo = testFiles
@@ -159,6 +170,11 @@ export const findTarget = (testDir: string, filter?: string): string => {
     }
 
     return testDir;
+};
+
+export const findPrefork = (testDir: string): string[] => {
+    const preforks = scanPrefork(testDir);
+    return preforks.map((f) => path.join(testDir, f));
 };
 
 const getTestFiles = (target: string): string[] => {
