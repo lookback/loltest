@@ -76,6 +76,9 @@ export const runMain = (self: string, config: RunConfiguration) => {
     // tslint:disable-next-line: no-let
     let files_done = 0;
 
+    // tslint:disable-next-line: no-let
+    let child_ident = 0;
+
     const runNext = (): boolean => {
         if (running === 0 && files_done === testFiles.length) {
             handleReporterMsg({
@@ -94,12 +97,17 @@ export const runMain = (self: string, config: RunConfiguration) => {
 
         running++;
 
+        const ident = child_ident;
+        child_ident++;
+
         const next = todo.shift()!;
         const params = [
             '--child-runner',
             next,
             '--build-dir',
             config.buildDir,
+            '--ident',
+            String(ident),
             ...(config.testFilter ? ['--test-filter', config.testFilter] : []),
         ];
 

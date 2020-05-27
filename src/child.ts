@@ -9,6 +9,7 @@ import { TestMeta } from '.';
 export interface RunConf {
     target: string;
     buildDir: string;
+    ident: string;
     testNameFilter?: string;
 }
 
@@ -105,6 +106,9 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         console.log('Unhandled promise rejection:', e);
         unhandledRejection = true;
     });
+
+    // tslint:disable-next-line: no-object-mutation
+    process.env['LOLTEST_IDENT'] = conf.ident;
 
     const testFilePaths = [conf.target];
 
