@@ -12,3 +12,4 @@ export interface RunConfiguration {
 export declare const runMain: (self: string, config: RunConfiguration) => void;
 /** Find a target to start child process from. */
 export declare const findTarget: (testDir: string, filter?: string | undefined) => string;
+export declare const findPrefork: (testDir: string) => string[];

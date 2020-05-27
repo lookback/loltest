@@ -3,6 +3,7 @@ import { TestMeta } from '.';
 export interface RunConf {
     target: string;
     buildDir: string;
+    ident: string;
     testNameFilter?: string;
 }
 /**
@@ -46,3 +47,8 @@ export interface TestErrorMessage {
 }
 export declare const foundTests: TestRun[];
 export declare const runChild: (conf: RunConf) => Promise<void>;
+/**
+ * All ts files are prebuilt by the main process. This registers a handler where
+ * require('test/foo.ts') will be dealt with as require('<buildDir/test/foo.js')
+ */
+export declare const registerShadowedTs: (buildDir: string) => void;
