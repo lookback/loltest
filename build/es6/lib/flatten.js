@@ -1,3 +1,0 @@
-/** Flattens a multi dimensional array. */
-export const flatten = (arr) => Array.prototype.concat.apply([], arr);
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZmxhdHRlbi5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uL3NyYy9saWIvZmxhdHRlbi50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSwwQ0FBMEM7QUFDMUMsTUFBTSxDQUFDLE1BQU0sT0FBTyxHQUFHLENBQUksR0FBVSxFQUFPLEVBQUUsQ0FDMUMsS0FBSyxDQUFDLFNBQVMsQ0FBQyxNQUFNLENBQUMsS0FBSyxDQUFDLEVBQUUsRUFBRSxHQUFHLENBQUMsQ0FBQyJ9

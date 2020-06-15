@@ -1,5 +1,5 @@
 {
-  "name": "loltest",
+  "name": "@lookback/loltest",
   "version": "1.6.0",
   "description": "Minimal test runner for node. Tailored for Typescript",
   "keywords": [
@@ -10,14 +10,18 @@
     "tests",
     "unit testing"
   ],
-  "author": "Martin Algesten",
+  "author": "Martin Algesten <martin@lookback.io>",
   "contributors": [
     "Johan Brook <johan@lookback.io>"
+  ],
+  "files": [
+    "build"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lookback/loltest.git"
   },
+  "license": "UNLICENSED",
   "bugs": {
     "url": "https://github.com/lookback/loltest/issues"
   },
@@ -31,7 +35,8 @@
   "module": "build/es6/index.js",
   "scripts": {
     "test": "./cli.js",
-    "build": "npm run build-cjs && npm run build-es6",
+    "build": "rm -rf build && npm run build-cjs && npm run build-es6",
+    "prepublishOnly": "npm run build",
     "build-cjs": "tsc --module commonjs --outDir build/cjs",
     "build-es6": "tsc --module es6 --outDir build/es6"
   },
