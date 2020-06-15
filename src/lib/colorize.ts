@@ -39,17 +39,14 @@ type Component = FgColor | BgColor | Effect;
 const sequence = (c1?: Component, c2?: Component, c3?: Component): string =>
     `\x1b[${[c1, c2, c3].filter(Boolean).join(';')}m`;
 
-const isComposition = (t: any): t is Composition =>
-    !!t && !!t.back && !!t.front;
+const isComposition = (t: any): t is Composition => !!t && !!t.back && !!t.front;
 
 type ColorFn = (str: any) => string;
 
 export const colorize = (color: Component | Composition, str: any) =>
-    `${
-        isComposition(color)
-            ? sequence(color.front, color.back, color.effect)
-            : sequence(color)
-    }${String(str)}${sequence(Effect.Reset)}`;
+    `${isComposition(color) ? sequence(color.front, color.back, color.effect) : sequence(color)}${String(
+        str,
+    )}${sequence(Effect.Reset)}`;
 
 export const red: ColorFn = colorize.bind(null, FgColor.Red);
 export const green: ColorFn = colorize.bind(null, FgColor.Green);

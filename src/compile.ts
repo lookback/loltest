@@ -4,17 +4,8 @@ import { red } from './lib/colorize';
 import fs from 'fs';
 import { Reporter, Output } from './reporters';
 
-export const compileTs = (
-    testFiles: string[],
-    config: RunConfiguration,
-    reporter: Reporter,
-    out: Output
-) => {
-    const tsconfigPath = ts.findConfigFile(
-        /*searchPath*/ './',
-        ts.sys.fileExists,
-        'tsconfig.json'
-    );
+export const compileTs = (testFiles: string[], config: RunConfiguration, reporter: Reporter, out: Output) => {
+    const tsconfigPath = ts.findConfigFile(/*searchPath*/ './', ts.sys.fileExists, 'tsconfig.json');
     if (!tsconfigPath) {
         throw new Error("Could not find a valid 'tsconfig.json'.");
     }
@@ -26,11 +17,7 @@ export const compileTs = (
         onUnRecoverableConfigFileDiagnostic: () => {},
     };
 
-    const parsedTsConf = ts.parseJsonConfigFileContent(
-        tsconfigOrig,
-        parseConfigHost,
-        './'
-    );
+    const parsedTsConf = ts.parseJsonConfigFileContent(tsconfigOrig, parseConfigHost, './');
 
     const compOpts: ts.CompilerOptions = {
         ...parsedTsConf.options,
@@ -67,29 +54,11 @@ export const compileTs = (
             return;
         }
         if (diagnostic.file) {
-            const {
-                line,
-                character,
-            } = diagnostic.file.getLineAndCharacterOfPosition(
-                diagnostic.start!
-            );
-            const message = ts.flattenDiagnosticMessageText(
-                diagnostic.messageText,
-                '\n'
-            );
-            console.log(
-                `${diagnostic.file.fileName} (${line + 1},${character +
-                    1}): ${message}`
-            );
+            const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+            const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
+            console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
         } else {
-            console.error(
-                red(
-                    ts.flattenDiagnosticMessageText(
-                        diagnostic.messageText,
-                        '\n'
-                    )
-                )
-            );
+            console.error(red(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')));
         }
     });
 
@@ -102,6 +71,6 @@ export const compileTs = (
             numFiles,
             duration: Date.now() - startTime,
         },
-        out
+        out,
     );
 };

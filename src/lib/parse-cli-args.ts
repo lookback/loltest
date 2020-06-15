@@ -14,10 +14,9 @@ type Result<S extends Spec, A extends Argument> = {
     };
 
 /** Create a parser for string arguments, often `process.argv`. */
-export const mkParseArgs = <S extends Spec, A extends Argument>(
-    options: S,
-    format?: A[]
-) => (argv: string[]): Result<S, A> => {
+export const mkParseArgs = <S extends Spec, A extends Argument>(options: S, format?: A[]) => (
+    argv: string[],
+): Result<S, A> => {
     const handlers: { [key: string]: Handler } = {};
 
     for (const key of Object.keys(options)) {
@@ -63,6 +62,6 @@ export const mkParseArgs = <S extends Spec, A extends Argument>(
             }
 
             return {};
-        })
+        }),
     );
 };

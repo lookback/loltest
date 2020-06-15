@@ -14,7 +14,7 @@ test(
             assert.ok('Pass');
             rs();
         });
-    }
+    },
 );
 
 test(
@@ -28,7 +28,7 @@ test(
             assert.ok('Pass');
             rs();
         });
-    }
+    },
 );
 
 test(
@@ -38,15 +38,12 @@ test(
     },
     async ({ cool, testCaseName }) => {
         assert.equal(cool, 42);
-        assert.equal(
-            testCaseName,
-            'Before return is passed to test case with meta'
-        );
+        assert.equal(testCaseName, 'Before return is passed to test case with meta');
         return new Promise((rs) => {
             assert.ok('Pass');
             rs();
         });
-    }
+    },
 );
 
 test(
@@ -76,11 +73,8 @@ test(
             rs();
         });
     },
-    async ({ cool, testCaseName }) => {        
+    async ({ cool, testCaseName }) => {
         assert.equal(cool, 42);
-        assert.equal(
-            testCaseName,
-            'Before return is passed to after with meta'
-        );
+        assert.equal(testCaseName, 'Before return is passed to after with meta');
     },
 );

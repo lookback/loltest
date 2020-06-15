@@ -4,13 +4,9 @@ import { Reporter } from '.';
 import { SerializedError } from '../lib/serialize-error';
 import { isPlainObject } from '../lib/is-plain-object';
 
-const getStackInfo = (
-    stack: string
-): { line?: string; column?: string; file: string } | string => {
+const getStackInfo = (stack: string): { line?: string; column?: string; file: string } | string => {
     const stackArr = stack.split('\n');
-    const stackLine = stackArr[0].includes('ERR_ASSERTION')
-        ? stackArr[1]
-        : stackArr[0];
+    const stackLine = stackArr[0].includes('ERR_ASSERTION') ? stackArr[1] : stackArr[0];
     const match = stackLine.match(/\((\/.*)\)/);
 
     if (!match) {
@@ -18,8 +14,7 @@ const getStackInfo = (
     }
 
     const base = basename(match[1]);
-    const [, file, line, column]: string[] =
-        base.match(/(.*):(\d+):(\d+)/) || [];
+    const [, file, line, column]: string[] = base.match(/(.*):(\d+):(\d+)/) || [];
 
     return { file, line, column };
 };
@@ -39,10 +34,8 @@ const toYAML = (obj: object, indent = 0): string =>
         .map(
             ([key, val]) =>
                 `${' '.repeat(indent)}${key}: ${
-                    isPlainObject(val)
-                        ? `\n${toYAML(val, indent + 3)}`
-                        : String(val)
-                }`
+                    isPlainObject(val) ? `\n${toYAML(val, indent + 3)}` : String(val)
+                }`,
         )
         .join(`\n`);
 
@@ -53,12 +46,10 @@ ${toYAML(obj, 3)}
    ...
 `;
 
-const logSuccess = (title: string, index: number) =>
-    `ok ${index} - ${title}`;
+const logSuccess = (title: string, index: number) => `ok ${index} - ${title}`;
 
 const logFailure = (title: string, index: number, error?: SerializedError) =>
-    `not ok ${index} - ${title}` +
-    (error ? outputDiagnostics(formatError(error)) : '');
+    `not ok ${index} - ${title}` + (error ? outputDiagnostics(formatError(error)) : '');
 
 const outputDirectives = ({ duration }: { duration: number }) =>
     `${duration !== 0 ? ' # time=' + duration + 'ms' : ''}`;
@@ -69,7 +60,6 @@ interface TAPReporter extends Reporter {
 }
 
 const TAPReporter: TAPReporter = {
-
     currentIndex: 0,
 
     totalNumTests: 0,
@@ -93,7 +83,7 @@ const TAPReporter: TAPReporter = {
                 (passed
                     ? logSuccess(testCase.title, this.currentIndex)
                     : logFailure(testCase.title, this.currentIndex, error)) +
-                outputDirectives({ duration })
+                outputDirectives({ duration }),
         );
     },
 

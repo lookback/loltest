@@ -5,11 +5,7 @@
  * Released under the MIT License.
  */
 function isObjectObject(o: any): boolean {
-    return (
-        o !== null &&
-        typeof o === 'object' &&
-        Object.prototype.toString.call(o) === '[object Object]'
-    );
+    return o !== null && typeof o === 'object' && Object.prototype.toString.call(o) === '[object Object]';
 }
 
 export function isPlainObject(o: any): boolean {

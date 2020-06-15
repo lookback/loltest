@@ -24,7 +24,7 @@ export type Test = {
         name: string,
         before: (meta: TestMeta) => S | Promise<S>,
         testfn: (s: S & TestMeta) => any | Promise<any>,
-        after?: (s: S & TestMeta) => any | Promise<any>
+        after?: (s: S & TestMeta) => any | Promise<any>,
     ): void;
 
     /** Declare a test case with a name. */
@@ -34,7 +34,7 @@ export type Test = {
             before?: (meta: TestMeta) => S | Promise<S>;
             testfn: (s: S & TestMeta) => any | Promise<any>;
             after?: (s: S & TestMeta) => any | Promise<any>;
-        }
+        },
     ): void;
 };
 
@@ -116,10 +116,7 @@ if (runConf) {
 
     const testDir = path.relative(
         process.cwd(),
-        path.join(
-            process.cwd(),
-            envConf.loltestTestDir || globalConf.testDir || DEFAULT_TEST_DIR
-        )
+        path.join(process.cwd(), envConf.loltestTestDir || globalConf.testDir || DEFAULT_TEST_DIR),
     );
 
     const buildDir = path.relative(
@@ -127,13 +124,12 @@ if (runConf) {
         path.join(
             process.cwd(),
             testDir,
-            envConf.loltestBuildDir || globalConf.buildDir || DEFAULT_BUILD_DIR
-        )
+            envConf.loltestBuildDir || globalConf.buildDir || DEFAULT_BUILD_DIR,
+        ),
     );
 
     const maxChildCount =
-        (envConf.loltestMaxChildCount &&
-            parseInt(envConf.loltestMaxChildCount)) ||
+        (envConf.loltestMaxChildCount && parseInt(envConf.loltestMaxChildCount)) ||
         require('os').cpus().length;
 
     const reporter = envConf.loltestReporter || globalConf.reporter || 'loltest';

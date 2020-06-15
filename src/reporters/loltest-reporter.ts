@@ -20,21 +20,12 @@ const SHOW_TIME_THRESHOLD_MS = 20;
 
 const logSuccess = (title: string, fileName: string, duration: number) =>
     `${green('✔︎')} ${fileName} ${dim('›')} ${title}${
-        duration > SHOW_TIME_THRESHOLD_MS
-            ? dim(` (${formatTime(duration)})`)
-            : ''
+        duration > SHOW_TIME_THRESHOLD_MS ? dim(` (${formatTime(duration)})`) : ''
     }`;
 
-const logFail = (
-    title: string,
-    fileName: string,
-    duration: number,
-    error?: Error
-) =>
+const logFail = (title: string, fileName: string, duration: number, error?: Error) =>
     `${red('✗')} ${red(fileName)} ${dim('›')} ${title}${
-        duration > SHOW_TIME_THRESHOLD_MS
-            ? dim(` (${formatTime(duration)})`)
-            : ''
+        duration > SHOW_TIME_THRESHOLD_MS ? dim(` (${formatTime(duration)})`) : ''
     }
 ${error && formatError(error)}\n`;
 
@@ -81,12 +72,7 @@ const LolTestReporter: LolTestReporter = {
     onCompileStart: (out) => out('Compiling…'),
 
     onCompileEnd: ({ numFiles, duration }, out) =>
-        out(
-            `Compiled ${numFiles} ${pluralize(
-                'file',
-                numFiles
-            )} in ${formatTime(duration)}`
-        ),
+        out(`Compiled ${numFiles} ${pluralize('file', numFiles)} in ${formatTime(duration)}`),
 
     onRunStart({ numFiles, maxChildCount }, out): void {
         this.startTime = Date.now();
@@ -110,7 +96,7 @@ const LolTestReporter: LolTestReporter = {
         out(
             passed
                 ? logSuccess(testCase.title, testCase.fileName, duration)
-                : logFail(testCase.title, testCase.fileName, duration, error)
+                : logFail(testCase.title, testCase.fileName, duration, error),
         );
     },
 
@@ -120,10 +106,9 @@ const LolTestReporter: LolTestReporter = {
 
         out(
             [
-                `\n\nRan ${this.numTotalTests} ${pluralize(
-                    'test',
-                    this.numTotalTests
-                )}${duration ? ` in ${formatTime(duration)}` : ''}`,
+                `\n\nRan ${this.numTotalTests} ${pluralize('test', this.numTotalTests)}${
+                    duration ? ` in ${formatTime(duration)}` : ''
+                }`,
                 `${
                     this.numPassedTests
                         ? green(this.numPassedTests + ' passed')
@@ -133,7 +118,7 @@ const LolTestReporter: LolTestReporter = {
                         ? red(this.numFailedTests + ' failed')
                         : this.numFailedTests + ' failed'
                 }`,
-            ].join('\n')
+            ].join('\n'),
         );
     },
 

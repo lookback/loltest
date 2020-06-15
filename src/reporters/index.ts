@@ -36,7 +36,7 @@ export interface Reporter {
             numFiles: number;
             duration: number;
         },
-        out: Output
+        out: Output,
     ) => void;
 
     /** Call before test run starts. */

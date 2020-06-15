@@ -2,15 +2,7 @@
 import { Reporter, TestCase } from '.';
 import { pluralize } from '../lib/pluralize';
 import { formatTime } from '../lib/format-time';
-import {
-    BgColor,
-    FgColor,
-    green,
-    red,
-    dim,
-    colorize,
-    Effect,
-} from '../lib/colorize';
+import { BgColor, FgColor, green, red, dim, colorize, Effect } from '../lib/colorize';
 import { SerializedError } from '../lib/serialize-error';
 
 const INDENT = '  ';
@@ -25,17 +17,14 @@ const pad = (str: string, len: number): string =>
 const formatError = (err: Error | SerializedError, indent = 0): string => {
     if (err.stack) {
         const c = err.stack.split('\n');
-        const t = err.message
-            .split('\n')
-            .join('\n' + INDENT.repeat(indent + 1));
+        const t = err.message.split('\n').join('\n' + INDENT.repeat(indent + 1));
         return [t, c[1]].join('\n' + INDENT.repeat(indent));
     } else {
         return err.message.split('\n').join('\n' + INDENT.repeat(indent + 1));
     }
 };
 
-const badge = (color: BgColor, text: string) =>
-    colorize({ back: color, front: FgColor.Black }, pad(text, 5));
+const badge = (color: BgColor, text: string) => colorize({ back: color, front: FgColor.Black }, pad(text, 5));
 
 /** Don't print durations (in milliseconds) below this threshold. */
 const SHOW_TIME_THRESHOLD_MS = 20;
@@ -44,19 +33,12 @@ const time = (duration: number) =>
     duration > SHOW_TIME_THRESHOLD_MS ? dim(` (${formatTime(duration)})`) : '';
 
 const logSuccess = (title: string, fileName: string, duration: number) =>
-    `${badge(BgColor.Green, 'PASS')} ${colorize(Effect.Bold, fileName)} ${dim(
-        '›'
-    )} ${title}${time(duration)}`;
+    `${badge(BgColor.Green, 'PASS')} ${colorize(Effect.Bold, fileName)} ${dim('›')} ${title}${time(
+        duration,
+    )}`;
 
-const logFail = (
-    title: string,
-    fileName: string,
-    duration: number,
-    error?: Error
-) =>
-    `${badge(BgColor.Red, 'FAIL')} ${colorize(Effect.Bold, fileName)} ${dim(
-        '›'
-    )} ${title}${time(duration)}`;
+const logFail = (title: string, fileName: string, duration: number, error?: Error) =>
+    `${badge(BgColor.Red, 'FAIL')} ${colorize(Effect.Bold, fileName)} ${dim('›')} ${title}${time(duration)}`;
 
 interface LolTest2Reporter extends Reporter {
     fails: {
@@ -94,24 +76,14 @@ const LolTest2Reporter: LolTest2Reporter = {
     onCompileStart: (out) => out('Compiling…'),
 
     onCompileEnd: ({ numFiles, duration }, out) =>
-        out(
-            `Compiled ${numFiles} ${pluralize(
-                'file',
-                numFiles
-            )} in ${formatTime(duration)}`
-        ),
+        out(`Compiled ${numFiles} ${pluralize('file', numFiles)} in ${formatTime(duration)}`),
 
     onRunStart({ numFiles, maxChildCount }, out): void {
         this.startTime = Date.now();
         this.numFiles = numFiles;
 
         out(`Using ${maxChildCount} children`);
-        out(
-            `${colorize(
-                Effect.Underline,
-                `Found ${numFiles} ${pluralize('test file', numFiles)}…\n`
-            )}`
-        );
+        out(`${colorize(Effect.Underline, `Found ${numFiles} ${pluralize('test file', numFiles)}…\n`)}`);
     },
 
     onTestStart(): void {
@@ -143,7 +115,7 @@ const LolTest2Reporter: LolTest2Reporter = {
         out(
             passed
                 ? logSuccess(testCase.title, testCase.fileName, duration)
-                : logFail(testCase.title, testCase.fileName, duration, error)
+                : logFail(testCase.title, testCase.fileName, duration, error),
         );
     },
 
@@ -155,29 +127,21 @@ const LolTest2Reporter: LolTest2Reporter = {
             .map(({ testCase, error, duration }, idx) =>
                 [
                     testCase
-                        ? `${INDENT}${red(
-                              `${idx + 1}) ${testCase.fileName}`
-                          )} ${dim('›')} ${red(testCase.title)}${
-                              duration ? ` (${formatTime(duration)})` : ''
-                          }\n`
+                        ? `${INDENT}${red(`${idx + 1}) ${testCase.fileName}`)} ${dim('›')} ${red(
+                              testCase.title,
+                          )}${duration ? ` (${formatTime(duration)})` : ''}\n`
                         : undefined,
-                    INDENT +
-                        (typeof error === 'string'
-                            ? error
-                            : formatError(error, 1)),
+                    INDENT + (typeof error === 'string' ? error : formatError(error, 1)),
                 ]
                     .filter(Boolean)
-                    .join('\n')
+                    .join('\n'),
             )
             .join('\n\n');
 
         out(
             [
                 fails.trim().length
-                    ? colorize(
-                          Effect.Underline,
-                          '\n\nSummary of all failed tests\n\n'
-                      )
+                    ? colorize(Effect.Underline, '\n\nSummary of all failed tests\n\n')
                     : green('\n\n✔︎ All is fine!'),
 
                 fails.trim().length ? fails : undefined,
@@ -185,9 +149,7 @@ const LolTest2Reporter: LolTest2Reporter = {
                 '\n',
 
                 `${colorize(Effect.Bold, 'Files')}:\t\t${[
-                    this.failedFiles.size
-                        ? red(`${this.failedFiles.size} failed`)
-                        : undefined,
+                    this.failedFiles.size ? red(`${this.failedFiles.size} failed`) : undefined,
                     this.passedFiles.size
                         ? green(`${this.passedFiles.size} passed`)
                         : `${this.passedFiles.size} passed`,
@@ -196,9 +158,7 @@ const LolTest2Reporter: LolTest2Reporter = {
                     .join(', ')}, ${this.numFiles} total`,
 
                 `${colorize(Effect.Bold, 'Tests')}:\t\t${[
-                    this.numFailedTests
-                        ? red(`${this.numFailedTests} failed`)
-                        : undefined,
+                    this.numFailedTests ? red(`${this.numFailedTests} failed`) : undefined,
                     this.numPassedTests
                         ? green(`${this.numPassedTests} passed`)
                         : `${this.numPassedTests} passed`,
@@ -206,26 +166,18 @@ const LolTest2Reporter: LolTest2Reporter = {
                     .filter(Boolean)
                     .join(', ')}, ${this.numTotalTests} total`,
 
-                `${colorize(Effect.Bold, 'Duration')}:\t${
-                    duration ? formatTime(duration) : '-'
-                }${
+                `${colorize(Effect.Bold, 'Duration')}:\t${duration ? formatTime(duration) : '-'}${
                     duration
                         ? ` (${
                               this.numTotalTests > 0
-                                  ? formatTime(
-                                        Number(
-                                            (
-                                                duration / this.numTotalTests
-                                            ).toFixed(1)
-                                        )
-                                    )
+                                  ? formatTime(Number((duration / this.numTotalTests).toFixed(1)))
                                   : '-'
                           } avg)`
                         : ''
                 }`,
             ]
                 .filter(Boolean)
-                .join('\n')
+                .join('\n'),
         );
     },
 

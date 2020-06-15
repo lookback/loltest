@@ -150,7 +150,7 @@ export const registerShadowedTs = (buildDir: string) => {
     require.extensions['.ts'] = (m: NodeModule, filename: string) => {
         const _compile = (<any>m)._compile;
         // tslint:disable-next-line: no-object-mutation
-        (<any>m)._compile = function(code: string, fileName: string): any {
+        (<any>m)._compile = function (code: string, fileName: string): any {
             const jsName = fileName.replace(/\.ts$/, '.js');
             const rel = path.relative(process.cwd(), jsName);
             const prebuilt = path.join(process.cwd(), buildDir, rel);
@@ -168,20 +168,16 @@ const fileNameWithParent = (filePath: string) => {
 };
 
 /** Returns tests where their name matches the regex. */
-const applyTestNameFilter = (tests: TestRun[], regex: RegExp) =>
-    tests.filter((t) => regex.test(t.name));
+const applyTestNameFilter = (tests: TestRun[], regex: RegExp) => tests.filter((t) => regex.test(t.name));
 
 const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
     const testFileName = fileNameWithParent(testFile.filePath);
-    const tests = filter
-        ? applyTestNameFilter(testFile.tests, new RegExp(filter))
-        : testFile.tests;
+    const tests = filter ? applyTestNameFilter(testFile.tests, new RegExp(filter)) : testFile.tests;
 
     if (!tests.length) {
         sendMessage({
             kind: 'test_error',
-            error: `${testFileName}: No tests found. Filter: ${filter ||
-                'none'}`,
+            error: `${testFileName}: No tests found. Filter: ${filter || 'none'}`,
         });
 
         return Promise.resolve([]);
@@ -201,22 +197,13 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
             };
 
             // run before and save the args
-            const args =
-                (await tryRun(
-                    testFileName,
-                    name,
-                    () => before && before(testMeta)
-                )) || {};
+            const args = (await tryRun(testFileName, name, () => before && before(testMeta))) || {};
 
             // tslint:disable-next-line: no-object-mutation
             Object.assign(args, testMeta);
 
             if (isFail(args)) {
-                console.error(
-                    `Error before ${name} in ${testFileName}: ${formatError(
-                        args.error
-                    )}`
-                );
+                console.error(`Error before ${name} in ${testFileName}: ${formatError(args.error)}`);
 
                 return {
                     name,
@@ -227,36 +214,30 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
                 };
             }
 
-            const testResult = await tryRun<TestResult>(
-                testFileName,
-                name,
-                async () => {
-                    sendMessage(<TestStartMessage>{
-                        kind: 'test_start',
-                        payload: testCase,
-                    });
+            const testResult = await tryRun<TestResult>(testFileName, name, async () => {
+                sendMessage(<TestStartMessage>{
+                    kind: 'test_start',
+                    payload: testCase,
+                });
 
-                    const startedAt = Date.now();
-                    await testfn(args);
-                    const duration = Date.now() - startedAt;
+                const startedAt = Date.now();
+                await testfn(args);
+                const duration = Date.now() - startedAt;
 
-                    return {
-                        name,
-                        filename: testFileName,
-                        fail: false,
-                        duration,
-                    };
-                }
-            );
+                return {
+                    name,
+                    filename: testFileName,
+                    fail: false,
+                    duration,
+                };
+            });
 
             sendMessage(<TestResultMessage>{
                 kind: 'test_result',
                 payload: {
                     testCase,
                     passed: !testResult.fail,
-                    error: testResult.error
-                        ? serializeError(testResult.error)
-                        : undefined,
+                    error: testResult.error ? serializeError(testResult.error) : undefined,
                     duration: testResult.duration,
                 },
             });
@@ -268,16 +249,12 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
                 () =>
                     after &&
                     after(args).catch((err: any) => {
-                        console.log(
-                            `Error after ${name} in ${testFileName}: ${formatError(
-                                err
-                            )}`
-                        );
-                    })
+                        console.log(`Error after ${name} in ${testFileName}: ${formatError(err)}`);
+                    }),
             );
 
             return testResult;
-        }
+        },
     );
 
     return Promise.all(all).catch((e) => {
@@ -291,7 +268,7 @@ const isFail = (t: any): t is Fail => !!t && !!t.fail;
 const tryRun = <T>(
     testFile: string,
     name: string,
-    fn: (() => Promise<T>) | undefined
+    fn: (() => Promise<T>) | undefined,
 ): Promise<T | TestResult> =>
     Promise.resolve()
         .then(fn)
@@ -302,7 +279,7 @@ const tryRun = <T>(
                 filename: testFile,
                 error: err,
                 duration: 0,
-            })
+            }),
         );
 
 const formatError = (e: any): string => {
