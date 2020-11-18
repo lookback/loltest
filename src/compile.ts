@@ -24,12 +24,7 @@ export const compileTs = (testFiles: string[], config: RunConfiguration, reporte
         // test/build
         outDir: config.buildDir,
         // this is just annoying when running tests
-        noImplicitAny: false,
-        noImplicitReturns: false,
-        noImplicitThis: false,
         noUnusedLocals: false,
-        strictNullChecks: false,
-        noStrictGenericChecks: false,
     };
 
     const host = ts.createCompilerHost(compOpts);
@@ -49,20 +44,41 @@ export const compileTs = (testFiles: string[], config: RunConfiguration, reporte
     const startTime = Date.now();
     const emitResult = program.emit();
 
-    emitResult.diagnostics.forEach((diagnostic) => {
+    let allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
+
+    const cwd = process.cwd();
+    let hasCompileErrors = false;
+
+    allDiagnostics.forEach((diagnostic) => {
         if (diagnostic.category !== ts.DiagnosticCategory.Error) {
             return;
         }
         if (diagnostic.file) {
+            let file = diagnostic.file.fileName;
+            if (file.startsWith(cwd)) {
+                file = file.substring(cwd.length);
+                if (file.startsWith('/')) {
+                    file = file.substring(1);
+                }
+            }
+            if (file.startsWith('node_modules')) {
+                return;
+            }
+            hasCompileErrors = true;
+
             const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!);
+            const loc = red(`${file} (${line + 1},${character + 1})`);
+
             const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-            console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+
+            out(`${loc}: ${message}`);
         } else {
-            console.error(red(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')));
+            hasCompileErrors = true;
+            out(red(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')));
         }
     });
 
-    if (emitResult.emitSkipped) {
+    if (emitResult.emitSkipped || hasCompileErrors) {
         process.exit(1);
     }
 
