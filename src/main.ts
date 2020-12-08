@@ -26,6 +26,8 @@ export interface RunConfiguration {
     testFilter: string | undefined;
     /** If we are to go into watch mode instead of existing. */
     watch: boolean;
+    /** If we are running in "js mode" with no typescript function. */
+    js: boolean;
 }
 
 /** The main process which forks child processes for each test. */
@@ -70,8 +72,10 @@ export const runMain = (self: string, config: RunConfiguration) => {
           }
         : undefined;
 
-    // compile ts to be reused by each child.
-    compileTs([...preforkFiles, ...testFiles], config, reporter, watchCallback, output);
+    if (!config.js) {
+        // compile ts to be reused by each child.
+        compileTs([...preforkFiles, ...testFiles], config, reporter, watchCallback, output);
+    }
 
     // on launch always run tests.
     doRunChildren();
@@ -89,10 +93,10 @@ const runChildren = (
     exitOnTestError: boolean,
     handleReporterMsg: (msg: Message) => void,
 ) => {
+    const replacer: [RegExp, string] = config.js ? [/^$/, ''] : [/\.(ts|js)$/, '.ts'];
+
     // files that are to be run before forking to child processes
-    const preforks = preforkFiles
-        .map((t) => t.replace(/\.(ts|js)$/, '.ts'))
-        .map((t) => path.join(process.cwd(), t));
+    const preforks = preforkFiles.map((t) => t.replace(...replacer)).map((t) => path.join(process.cwd(), t));
 
     registerShadowedTs(config.buildDir);
 
@@ -100,7 +104,7 @@ const runChildren = (
     preforks.forEach((f) => require(f));
 
     const maxChildCount = config.maxChildCount;
-    const todo = testFiles.map((t) => t.replace(/\.(ts|js)$/, '.ts')).map((t) => path.join(process.cwd(), t));
+    const todo = testFiles.map((t) => t.replace(...replacer)).map((t) => path.join(process.cwd(), t));
 
     let running = 0;
 

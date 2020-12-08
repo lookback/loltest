@@ -19,6 +19,7 @@ export const mkParseArgs = <S extends Spec, A extends Argument>(options: S, form
 ): Result<S, A> => {
     const handlers: { [key: string]: Handler } = {
         watch: Boolean,
+        js: Boolean,
     };
 
     for (const key of Object.keys(options)) {

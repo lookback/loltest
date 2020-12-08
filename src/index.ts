@@ -11,7 +11,7 @@ const DEFAULT_TEST_DIR = 'test';
 /** Directory (under TEST_DIR) where we output files to */
 const DEFAULT_BUILD_DIR = 'build';
 
-const parseArgs = mkParseArgs({}, ['fileFilter', 'testFilter', 'watch']);
+const parseArgs = mkParseArgs({}, ['fileFilter', 'testFilter', 'watch', 'js']);
 
 /** Declares a test case to be run. */
 export type Test = {
@@ -147,6 +147,7 @@ if (runConf) {
         filter: cliArgs.fileFilter,
         testFilter: cliArgs.testFilter,
         watch: !!cliArgs.watch,
+        js: !!cliArgs.js,
     };
 
     runMain(pathToSelf, {
