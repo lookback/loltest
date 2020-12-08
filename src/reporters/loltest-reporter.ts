@@ -1,4 +1,3 @@
-// tslint:disable no-object-mutation
 import { Reporter } from '.';
 import { SerializedError } from '../lib/serialize-error';
 import { green, red, dim, yellow } from '../lib/colorize';

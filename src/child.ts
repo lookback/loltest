@@ -93,9 +93,8 @@ const sendMessage = async (msg: Message): Promise<void> => {
 
 // Child process test runner
 export const runChild = async (conf: RunConf): Promise<void> => {
-    // tslint:disable-next-line:no-let
     let uncaughtException = false;
-    // tslint:disable-next-line:no-let
+
     let unhandledRejection = false;
 
     process.on('uncaughtException', (e) => {
@@ -107,14 +106,12 @@ export const runChild = async (conf: RunConf): Promise<void> => {
         unhandledRejection = true;
     });
 
-    // tslint:disable-next-line: no-object-mutation
     process.env['LOLTEST_IDENT'] = conf.ident;
 
     const testFilePaths = [conf.target];
 
     registerShadowedTs(conf.buildDir);
 
-    // tslint:disable-next-line: no-object-mutation
     process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 
     const testFiles: TestFile[] = testFilePaths.map<TestFile>((testPath) => {
@@ -145,11 +142,10 @@ export const runChild = async (conf: RunConf): Promise<void> => {
  * require('test/foo.ts') will be dealt with as require('<buildDir/test/foo.js')
  */
 export const registerShadowedTs = (buildDir: string) => {
-    // tslint:disable-next-line: no-object-mutation
     const jsHandler = require.extensions['.js'];
     require.extensions['.ts'] = (m: NodeModule, filename: string) => {
         const _compile = (<any>m)._compile;
-        // tslint:disable-next-line: no-object-mutation
+
         (<any>m)._compile = function (code: string, fileName: string): any {
             const jsName = fileName.replace(/\.ts$/, '.js');
             const rel = path.relative(process.cwd(), jsName);
@@ -199,7 +195,6 @@ const doTest = (testFile: TestFile, filter?: string): Promise<TestResult[]> => {
             // run before and save the args
             const args = (await tryRun(testFileName, name, () => before && before(testMeta))) || {};
 
-            // tslint:disable-next-line: no-object-mutation
             Object.assign(args, testMeta);
 
             if (isFail(args)) {

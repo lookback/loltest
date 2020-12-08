@@ -1,4 +1,3 @@
-// tslint:disable no-object-mutation
 import { Reporter, TestCase } from '.';
 import { pluralize } from '../lib/pluralize';
 import { formatTime } from '../lib/format-time';

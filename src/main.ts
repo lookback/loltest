@@ -71,7 +71,7 @@ export const runMain = (self: string, config: RunConfiguration) => {
 
     const maxChildCount = config.maxChildCount;
     const todo = testFiles.map((t) => t.replace(/\.(ts|js)$/, '.ts')).map((t) => path.join(process.cwd(), t));
-    // tslint:disable-next-line:no-let
+
     let running = 0;
 
     handleReporterMsg({
@@ -82,10 +82,8 @@ export const runMain = (self: string, config: RunConfiguration) => {
         },
     });
 
-    // tslint:disable-next-line: no-let
     let files_done = 0;
 
-    // tslint:disable-next-line: no-let
     let child_ident = 0;
 
     const runNext = (): boolean => {

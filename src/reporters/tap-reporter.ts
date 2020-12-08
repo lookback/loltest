@@ -1,4 +1,3 @@
-// tslint:disable no-object-mutation
 import { basename } from 'path';
 import { Reporter } from '.';
 import { SerializedError } from '../lib/serialize-error';

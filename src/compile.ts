@@ -31,9 +31,8 @@ export const compileTs = (testFiles: string[], config: RunConfiguration, reporte
 
     const fileNames = [...parsedTsConf.fileNames, ...testFiles];
 
-    let numFiles = 0; // tslint:disable-line
+    let numFiles = 0;
 
-    // tslint:disable-next-line: no-object-mutation
     host.writeFile = (fileName, content) => {
         numFiles++;
         return ts.sys.writeFile(fileName, content);

@@ -28,7 +28,6 @@ export const mkParseArgs = <S extends Spec, A extends Argument>(options: S, form
             throw new TypeError('Argument key must have a real name!');
         }
 
-        // tslint:disable-next-line no-object-mutation
         handlers[key] = options[key];
     }
 
