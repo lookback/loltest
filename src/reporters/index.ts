@@ -27,6 +27,9 @@ export interface TestCaseReport {
 export type Output = (msg?: string) => void;
 
 export interface Reporter {
+    /** Used when watching between test runs */
+    reset: () => void;
+
     /** Call when compilation starts. */
     onCompileStart: (out: Output) => void;
 

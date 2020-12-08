@@ -21,9 +21,11 @@ export interface RunConfiguration {
     maxChildCount: number;
     reporter: string;
     /** Filter for which test files to run. */
-    filter?: string;
+    filter: string | undefined;
     /** Filter for test names to run. Can be regex. */
-    testFilter?: string;
+    testFilter: string | undefined;
+    /** If we are to go into watch mode instead of existing. */
+    watch: boolean;
 }
 
 /** The main process which forks child processes for each test. */
@@ -56,9 +58,37 @@ export const runMain = (self: string, config: RunConfiguration) => {
         ((x: never) => {})(message); // assert exhaustive
     };
 
-    // compile ts to be reused by each child.
-    compileTs([...preforkFiles, ...testFiles], config, reporter, output);
+    const exitOnTestError = !config.watch;
 
+    const doRunChildren = () =>
+        runChildren(self, config, preforkFiles, testFiles, exitOnTestError, handleReporterMsg);
+
+    const watchCallback = config.watch
+        ? () => {
+              reporter.reset();
+              doRunChildren();
+          }
+        : undefined;
+
+    // compile ts to be reused by each child.
+    compileTs([...preforkFiles, ...testFiles], config, reporter, watchCallback, output);
+
+    // on launch always run tests.
+    doRunChildren();
+
+    if (watchCallback) {
+        output(`Starting watch…`);
+    }
+};
+
+const runChildren = (
+    self: string,
+    config: RunConfiguration,
+    preforkFiles: string[],
+    testFiles: string[],
+    exitOnTestError: boolean,
+    handleReporterMsg: (msg: Message) => void,
+) => {
     // files that are to be run before forking to child processes
     const preforks = preforkFiles
         .map((t) => t.replace(/\.(ts|js)$/, '.ts'))
@@ -130,11 +160,13 @@ export const runMain = (self: string, config: RunConfiguration) => {
         child.on('exit', (childExit, signal) => {
             // die on first child exiting with non-null.
             if (childExit && childExit !== 0) {
-                handleReporterMsg({
-                    kind: 'run_complete',
-                });
+                if (exitOnTestError) {
+                    handleReporterMsg({
+                        kind: 'run_complete',
+                    });
 
-                process.exit(childExit);
+                    process.exit(childExit);
+                }
             }
 
             files_done++;

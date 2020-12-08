@@ -17,7 +17,9 @@ type Result<S extends Spec, A extends Argument> = {
 export const mkParseArgs = <S extends Spec, A extends Argument>(options: S, format?: A[]) => (
     argv: string[],
 ): Result<S, A> => {
-    const handlers: { [key: string]: Handler } = {};
+    const handlers: { [key: string]: Handler } = {
+        watch: Boolean,
+    };
 
     for (const key of Object.keys(options)) {
         if (!key) {

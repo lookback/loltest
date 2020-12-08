@@ -72,6 +72,17 @@ const LolTest2Reporter: LolTest2Reporter = {
 
     startTime: null,
 
+    reset() {
+        this.fails = [];
+        this.failedFiles = new Set();
+        this.passedFiles = new Set();
+        this.numFailedTests = 0;
+        this.numPassedTests = 0;
+        this.numTotalTests = 0;
+        this.numFiles = 0;
+        this.startTime = null;
+    },
+
     onCompileStart: (out) => out('Compiling…'),
 
     onCompileEnd: ({ numFiles, duration }, out) =>

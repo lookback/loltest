@@ -63,6 +63,11 @@ const TAPReporter: TAPReporter = {
 
     totalNumTests: 0,
 
+    reset() {
+        this.currentIndex = 0;
+        this.totalNumTests = 0;
+    },
+
     onCompileStart: (out) => out(),
     onCompileEnd: (_, out) => out(),
 

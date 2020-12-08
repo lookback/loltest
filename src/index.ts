@@ -11,7 +11,7 @@ const DEFAULT_TEST_DIR = 'test';
 /** Directory (under TEST_DIR) where we output files to */
 const DEFAULT_BUILD_DIR = 'build';
 
-const parseArgs = mkParseArgs({}, ['fileFilter', 'testFilter']);
+const parseArgs = mkParseArgs({}, ['fileFilter', 'testFilter', 'watch']);
 
 /** Declares a test case to be run. */
 export type Test = {
@@ -134,21 +134,22 @@ if (runConf) {
 
     const reporter = envConf.loltestReporter || globalConf.reporter || 'loltest';
 
+    const pathToSelf = argv[1]; // 0 is nodejs itself
+
+    const cliArgs = parseArgs(argv.slice(2));
+
     const conf: RunConfiguration = {
         ...globalConf,
         reporter,
         testDir,
         buildDir,
         maxChildCount,
-    };
-
-    const pathToSelf = argv[1]; // 0 is nodejs itself
-
-    const cliArgs = parseArgs(argv.slice(2));
-
-    runMain(pathToSelf, {
         filter: cliArgs.fileFilter,
         testFilter: cliArgs.testFilter,
+        watch: !!cliArgs.watch,
+    };
+
+    runMain(pathToSelf, {
         ...conf,
     });
 }
